@@ -25,10 +25,9 @@ const DIMENSIONS: { key: string; label: string }[] = [
 ];
 
 const LEVELS: { key: string; label: string }[] = [
-  { key: "biological", label: "Biológico/Evolutivo" },
-  { key: "conditioning", label: "Condicionamento" },
-  { key: "cognitive_language", label: "Cognitivo/Linguagem" },
-  { key: "group_cultural", label: "Grupo/Cultural" },
+  { key: "variation", label: "Variação" },
+  { key: "selection", label: "Seleção" },
+  { key: "retention", label: "Retenção" },
 ];
 
 function scoreColor(score: number | null): string {

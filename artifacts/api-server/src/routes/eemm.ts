@@ -13,10 +13,9 @@ const DIMENSIONS = [
 ] as const;
 
 const LEVELS = [
-  "biological",
-  "conditioning",
-  "cognitive_language",
-  "group_cultural",
+  "variation",
+  "selection",
+  "retention",
 ] as const;
 
 type Dimension = (typeof DIMENSIONS)[number];
