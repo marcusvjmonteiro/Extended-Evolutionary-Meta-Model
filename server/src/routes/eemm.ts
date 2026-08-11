@@ -1,27 +1,31 @@
 import { Router, Request, Response } from "express";
 import db from "../database";
+import { DIMENSIONS, LEVELS, VALENCES } from "@shared/eemm-types";
+import type { Dimension, Level, Valence } from "@shared/eemm-types";
 
 const router = Router({ mergeParams: true });
 
-const DIMENSIONS = [
-  "cognition",
-  "affect",
-  "attention",
-  "self",
-  "behavior",
-  "motivation",
-] as const;
+interface CellRow {
+  dimension: Dimension;
+  level: Level;
+  valence: Valence;
+  severity_score: number | null;
+  notes: string | null;
+  updated_at: string | null;
+}
 
-const LEVELS = [
-  "biological",
-  "conditioning",
-  "cognitive_language",
-  "group_cultural",
-] as const;
-
-type Dimension = (typeof DIMENSIONS)[number];
-type Level = (typeof LEVELS)[number];
-
+/**
+ * GET /api/patients/:id/eemm
+ *
+ * Formato de resposta: array FLAT de 36 entradas
+ * (6 dimensões × 3 níveis × 2 valências), sempre completo — registros ainda não
+ * preenchidos vêm com `severity_score` e `notes` nulos.
+ *
+ * Escolhido em vez de um objeto aninhado por dois motivos: (a) a chave lógica é a
+ * tripla (dimension, level, valence), e um array flat a expõe sem ambiguidade nem
+ * necessidade de percorrer níveis de aninhamento; (b) mantém a resposta estável e
+ * legível para inspeção direta durante a avaliação por especialistas.
+ */
 router.get("/", (req: Request, res: Response) => {
   try {
     const patient = db
@@ -35,32 +39,28 @@ router.get("/", (req: Request, res: Response) => {
 
     const rows = db
       .prepare(
-        "SELECT dimension, level, severity_score, notes, updated_at FROM eemm_cells WHERE patient_id = ?"
+        "SELECT dimension, level, valence, severity_score, notes, updated_at FROM eemm_cells WHERE patient_id = ?"
       )
-      .all(req.params.id) as {
-      dimension: string;
-      level: string;
-      severity_score: number | null;
-      notes: string | null;
-      updated_at: string;
-    }[];
+      .all(req.params.id) as CellRow[];
 
-    const cellMap = new Map(
-      rows.map((r) => [`${r.dimension}|${r.level}`, r])
+    const stored = new Map(
+      rows.map((r) => [`${r.dimension}|${r.level}|${r.valence}`, r])
     );
 
-    const cells = [];
+    const cells: CellRow[] = [];
     for (const dimension of DIMENSIONS) {
       for (const level of LEVELS) {
-        const key = `${dimension}|${level}`;
-        const existing = cellMap.get(key);
-        cells.push({
-          dimension,
-          level,
-          severity_score: existing?.severity_score ?? null,
-          notes: existing?.notes ?? null,
-          updated_at: existing?.updated_at ?? null,
-        });
+        for (const valence of VALENCES) {
+          const existing = stored.get(`${dimension}|${level}|${valence}`);
+          cells.push({
+            dimension,
+            level,
+            valence,
+            severity_score: existing?.severity_score ?? null,
+            notes: existing?.notes ?? null,
+            updated_at: existing?.updated_at ?? null,
+          });
+        }
       }
     }
 
@@ -71,7 +71,7 @@ router.get("/", (req: Request, res: Response) => {
 });
 
 router.put("/", (req: Request, res: Response) => {
-  const { dimension, level, severity_score, notes } = req.body;
+  const { dimension, level, valence, severity_score, notes } = req.body;
 
   if (!dimension || !DIMENSIONS.includes(dimension as Dimension)) {
     res.status(400).json({
@@ -83,6 +83,13 @@ router.put("/", (req: Request, res: Response) => {
   if (!level || !LEVELS.includes(level as Level)) {
     res.status(400).json({
       error: `Field 'level' must be one of: ${LEVELS.join(", ")}`,
+    });
+    return;
+  }
+
+  if (!valence || !VALENCES.includes(valence as Valence)) {
+    res.status(400).json({
+      error: `Field 'valence' must be one of: ${VALENCES.join(", ")}`,
     });
     return;
   }
@@ -111,10 +118,13 @@ router.put("/", (req: Request, res: Response) => {
       return;
     }
 
+    // O alvo de conflito é a constraint composta de 4 colunas — é ela que permite
+    // que o registro adaptativo e o desadaptativo da MESMA célula dimensão×nível
+    // coexistam em vez de um sobrescrever o outro.
     db.prepare(`
-      INSERT INTO eemm_cells (patient_id, dimension, level, severity_score, notes, updated_at)
-      VALUES (?, ?, ?, ?, ?, datetime('now'))
-      ON CONFLICT(patient_id, dimension, level) DO UPDATE SET
+      INSERT INTO eemm_cells (patient_id, dimension, level, valence, severity_score, notes, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(patient_id, dimension, level, valence) DO UPDATE SET
         severity_score = excluded.severity_score,
         notes = excluded.notes,
         updated_at = excluded.updated_at
@@ -122,15 +132,16 @@ router.put("/", (req: Request, res: Response) => {
       req.params.id,
       dimension,
       level,
+      valence,
       severity_score ?? null,
       notes ?? null
     );
 
     const cell = db
       .prepare(
-        "SELECT * FROM eemm_cells WHERE patient_id = ? AND dimension = ? AND level = ?"
+        "SELECT dimension, level, valence, severity_score, notes, updated_at FROM eemm_cells WHERE patient_id = ? AND dimension = ? AND level = ? AND valence = ?"
       )
-      .get(req.params.id, dimension, level);
+      .get(req.params.id, dimension, level, valence);
 
     res.json(cell);
   } catch (err) {

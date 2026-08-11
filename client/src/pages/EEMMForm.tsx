@@ -1,5 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import {
+  DIMENSIONS,
+  LEVELS,
+  VALENCES,
+  DIMENSION_LABELS,
+  LEVEL_LABELS,
+  VALENCE_LABELS,
+} from "@shared/eemm-types";
+import type { Dimension, Level, Valence } from "@shared/eemm-types";
 
 interface Patient {
   id: number;
@@ -8,51 +17,73 @@ interface Patient {
 }
 
 interface Cell {
-  dimension: string;
-  level: string;
+  dimension: Dimension;
+  level: Level;
+  valence: Valence;
   severity_score: number | null;
   notes: string | null;
   updated_at: string | null;
 }
 
-const DIMENSIONS: { key: string; label: string }[] = [
-  { key: "cognition", label: "Cognição" },
-  { key: "affect", label: "Afeto" },
-  { key: "attention", label: "Atenção" },
-  { key: "self", label: "Self" },
-  { key: "behavior", label: "Comportamento" },
-  { key: "motivation", label: "Motivação" },
-];
-
-const LEVELS: { key: string; label: string }[] = [
-  { key: "biological", label: "Biológico/Evolutivo" },
-  { key: "conditioning", label: "Condicionamento" },
-  { key: "cognitive_language", label: "Cognitivo/Linguagem" },
-  { key: "group_cultural", label: "Grupo/Cultural" },
-];
-
-function scoreColor(score: number | null): string {
-  if (!score) return "bg-gray-100 text-gray-400 border-gray-200";
-  if (score <= 3) return "bg-green-100 text-green-800 border-green-300";
-  if (score <= 6) return "bg-yellow-100 text-yellow-800 border-yellow-300";
-  return "bg-red-100 text-red-800 border-red-300";
-}
-
-function scoreDotColor(score: number | null): string {
-  if (!score) return "";
-  if (score <= 3) return "bg-green-500";
-  if (score <= 6) return "bg-yellow-500";
-  return "bg-red-500";
-}
-
-interface PanelState {
-  dimension: string;
-  level: string;
+interface ValenceDraft {
   score: number;
   notes: string;
   saving: boolean;
   saved: boolean;
 }
+
+interface PanelState {
+  dimension: Dimension;
+  level: Level;
+  drafts: Record<Valence, ValenceDraft>;
+}
+
+/**
+ * Codificação visual da célula bivalente:
+ *   - MATIZ  indica a valência  (verde = adaptativo, vermelho = desadaptativo)
+ *   - SATURAÇÃO indica o escore (mais escuro = escore mais alto)
+ *   - Metade tracejada e cinza = valência ainda não registrada
+ *
+ * Assim, uma célula com só o adaptativo preenchido, só o desadaptativo, ambos ou
+ * nenhum é sempre distinguível à primeira vista, sem que a cor confunda "grave"
+ * com "desadaptativo" — que são eixos independentes no metamodelo.
+ */
+function halfClass(valence: Valence, score: number | null): string {
+  if (score === null || score === 0) {
+    return "bg-gray-50 border-dashed border-gray-200 text-gray-300";
+  }
+  if (valence === "adaptive") {
+    if (score <= 3) return "bg-emerald-50 border-emerald-300 text-emerald-700";
+    if (score <= 6) return "bg-emerald-100 border-emerald-400 text-emerald-800";
+    return "bg-emerald-200 border-emerald-500 text-emerald-900";
+  }
+  if (score <= 3) return "bg-rose-50 border-rose-300 text-rose-700";
+  if (score <= 6) return "bg-rose-100 border-rose-400 text-rose-800";
+  return "bg-rose-200 border-rose-500 text-rose-900";
+}
+
+const VALENCE_ACCENT: Record<
+  Valence,
+  { dot: string; button: string; label: string; ring: string }
+> = {
+  adaptive: {
+    dot: "bg-emerald-500",
+    button: "bg-emerald-600 hover:bg-emerald-700",
+    label: "text-emerald-700",
+    ring: "border-emerald-400 text-emerald-700",
+  },
+  maladaptive: {
+    dot: "bg-rose-500",
+    button: "bg-rose-600 hover:bg-rose-700",
+    label: "text-rose-700",
+    ring: "border-rose-400 text-rose-700",
+  },
+};
+
+const VALENCE_SHORT: Record<Valence, string> = {
+  adaptive: "A",
+  maladaptive: "D",
+};
 
 export default function EEMMForm() {
   const { id } = useParams<{ id: string }>();
@@ -90,38 +121,54 @@ export default function EEMMForm() {
     loadData();
   }, [id]);
 
-  function getCell(dimension: string, level: string): Cell | undefined {
-    return cells.find((c) => c.dimension === dimension && c.level === level);
+  function getCell(
+    dimension: Dimension,
+    level: Level,
+    valence: Valence
+  ): Cell | undefined {
+    return cells.find(
+      (c) =>
+        c.dimension === dimension &&
+        c.level === level &&
+        c.valence === valence
+    );
   }
 
-  function openPanel(dimension: string, level: string) {
-    const cell = getCell(dimension, level);
-    setPanel({
-      dimension,
-      level,
-      score: cell?.severity_score ?? 0,
-      notes: cell?.notes ?? "",
-      saving: false,
-      saved: false,
-    });
-  }
-
-  const closePanel = useCallback(async () => {
-    if (!panel) return;
-
-    if (
-      panel.score > 0 ||
-      panel.notes.trim() !== (getCell(panel.dimension, panel.level)?.notes ?? "")
-    ) {
-      await savePanel(panel, true);
+  function openPanel(dimension: Dimension, level: Level) {
+    const drafts = {} as Record<Valence, ValenceDraft>;
+    for (const valence of VALENCES) {
+      const cell = getCell(dimension, level, valence);
+      drafts[valence] = {
+        score: cell?.severity_score ?? 0,
+        notes: cell?.notes ?? "",
+        saving: false,
+        saved: false,
+      };
     }
+    setPanel({ dimension, level, drafts });
+  }
 
-    setPanel(null);
-  }, [panel, cells]);
+  function updateDraft(valence: Valence, patch: Partial<ValenceDraft>) {
+    setPanel((prev) =>
+      prev
+        ? {
+            ...prev,
+            drafts: {
+              ...prev.drafts,
+              [valence]: { ...prev.drafts[valence], ...patch },
+            },
+          }
+        : prev
+    );
+  }
 
-  async function savePanel(p: PanelState = panel!, silent = false) {
-    if (!p) return;
-    if (!silent) setPanel((prev) => prev && { ...prev, saving: true, saved: false });
+  /**
+   * Salva UMA valência por vez. O registro adaptativo e o desadaptativo da mesma
+   * célula são linhas independentes no banco, então cada um tem seu próprio PUT.
+   */
+  async function saveValence(p: PanelState, valence: Valence, silent = false) {
+    const draft = p.drafts[valence];
+    if (!silent) updateDraft(valence, { saving: true, saved: false });
 
     try {
       const res = await fetch(`/api/patients/${id}/eemm`, {
@@ -130,26 +177,50 @@ export default function EEMMForm() {
         body: JSON.stringify({
           dimension: p.dimension,
           level: p.level,
-          severity_score: p.score > 0 ? p.score : null,
-          notes: p.notes.trim() || null,
+          valence,
+          severity_score: draft.score > 0 ? draft.score : null,
+          notes: draft.notes.trim() || null,
         }),
       });
       if (res.ok) {
         const updated: Cell = await res.json();
         setCells((prev) =>
           prev.map((c) =>
-            c.dimension === updated.dimension && c.level === updated.level
+            c.dimension === updated.dimension &&
+            c.level === updated.level &&
+            c.valence === updated.valence
               ? updated
               : c
           )
         );
-        if (!silent)
-          setPanel((prev) => prev && { ...prev, saving: false, saved: true });
+        if (!silent) updateDraft(valence, { saving: false, saved: true });
+      } else if (!silent) {
+        updateDraft(valence, { saving: false });
       }
     } catch {
-      if (!silent) setPanel((prev) => prev && { ...prev, saving: false });
+      if (!silent) updateDraft(valence, { saving: false });
     }
   }
+
+  function isDirty(p: PanelState, valence: Valence): boolean {
+    const cell = getCell(p.dimension, p.level, valence);
+    const draft = p.drafts[valence];
+    return (
+      draft.score !== (cell?.severity_score ?? 0) ||
+      draft.notes.trim() !== (cell?.notes ?? "")
+    );
+  }
+
+  // Autosave ao fechar — agora por valência, não pela célula inteira.
+  const closePanel = useCallback(async () => {
+    if (!panel) return;
+    for (const valence of VALENCES) {
+      if (isDirty(panel, valence)) {
+        await saveValence(panel, valence, true);
+      }
+    }
+    setPanel(null);
+  }, [panel, cells]);
 
   if (loading) {
     return (
@@ -172,11 +243,6 @@ export default function EEMMForm() {
       </div>
     );
   }
-
-  const dimLabel = (key: string) =>
-    DIMENSIONS.find((d) => d.key === key)?.label ?? key;
-  const lvlLabel = (key: string) =>
-    LEVELS.find((l) => l.key === key)?.label ?? key;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -205,73 +271,88 @@ export default function EEMMForm() {
           </button>
           <div>
             <h1 className="text-lg font-bold text-gray-900">{patient.name}</h1>
-            <p className="text-xs text-gray-400">Formulação EEMM</p>
+            <p className="text-xs text-gray-400">
+              Formulação EEMM — dimensão × nível × valência
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid 6 dimensões × 3 níveis, cada célula bivalente */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr>
-                <th className="w-36 min-w-36 bg-gray-50 border-b border-r border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <th className="w-44 min-w-44 bg-gray-50 border-b border-r border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Dimensão
                 </th>
-                {LEVELS.map((lv) => (
+                {LEVELS.map((level) => (
                   <th
-                    key={lv.key}
+                    key={level}
                     className="bg-gray-50 border-b border-r last:border-r-0 border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600"
                   >
-                    {lv.label}
+                    {LEVEL_LABELS[level]}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {DIMENSIONS.map((dim, di) => (
+              {DIMENSIONS.map((dimension, di) => (
                 <tr
-                  key={dim.key}
-                  className={di < DIMENSIONS.length - 1 ? "border-b border-gray-100" : ""}
+                  key={dimension}
+                  className={
+                    di < DIMENSIONS.length - 1 ? "border-b border-gray-100" : ""
+                  }
                 >
                   <td className="bg-gray-50 border-r border-gray-200 px-4 py-4 font-semibold text-gray-700 text-sm">
-                    {dim.label}
+                    {DIMENSION_LABELS[dimension]}
                   </td>
-                  {LEVELS.map((lv) => {
-                    const cell = getCell(dim.key, lv.key);
-                    const score = cell?.severity_score ?? null;
+                  {LEVELS.map((level) => {
                     const isActive =
-                      panel?.dimension === dim.key && panel?.level === lv.key;
+                      panel?.dimension === dimension && panel?.level === level;
 
                     return (
                       <td
-                        key={lv.key}
-                        onClick={() => openPanel(dim.key, lv.key)}
+                        key={level}
+                        onClick={() => openPanel(dimension, level)}
                         className={`border-r last:border-r-0 border-gray-100 p-2 cursor-pointer transition-colors ${
                           isActive ? "bg-blue-50" : "hover:bg-gray-50"
                         }`}
                       >
                         <div
-                          className={`rounded-lg border px-3 py-3 min-h-16 flex flex-col items-center justify-center gap-1 transition-all ${
-                            isActive
-                              ? "border-blue-400 bg-blue-50 ring-2 ring-blue-200"
-                              : scoreColor(score)
+                          className={`flex gap-1 rounded-lg p-1 ${
+                            isActive ? "ring-2 ring-blue-300" : ""
                           }`}
                         >
-                          {score ? (
-                            <>
+                          {VALENCES.map((valence) => {
+                            const score =
+                              getCell(dimension, level, valence)
+                                ?.severity_score ?? null;
+                            return (
                               <div
-                                className={`w-2 h-2 rounded-full ${scoreDotColor(score)}`}
-                              />
-                              <span className="text-lg font-bold leading-none">
-                                {score}
-                              </span>
-                              <span className="text-xs opacity-60">/10</span>
-                            </>
-                          ) : (
-                            <span className="text-xs text-gray-300">—</span>
-                          )}
+                                key={valence}
+                                title={`${VALENCE_LABELS[valence]} — ${
+                                  score ?? "não registrado"
+                                }`}
+                                className={`flex-1 rounded-md border px-2 py-2 min-h-14 flex flex-col items-center justify-center gap-0.5 transition-all ${halfClass(
+                                  valence,
+                                  score
+                                )}`}
+                              >
+                                <span className="text-[10px] font-bold uppercase opacity-70 leading-none">
+                                  {VALENCE_SHORT[valence]}
+                                </span>
+                                {score ? (
+                                  <span className="text-base font-bold leading-none">
+                                    {score}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs leading-none">—</span>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </td>
                     );
@@ -283,43 +364,44 @@ export default function EEMMForm() {
         </div>
 
         {/* Legenda */}
-        <div className="mt-4 flex items-center gap-6 text-xs text-gray-500">
-          <span className="font-medium">Severidade:</span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-green-200 border border-green-300 inline-block" />
-            1–3 Leve
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-yellow-200 border border-yellow-300 inline-block" />
-            4–6 Moderado
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-red-200 border border-red-300 inline-block" />
-            7–10 Grave
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-gray-100 border border-gray-200 inline-block" />
-            Não avaliado
-          </span>
+        <div className="mt-4 space-y-2 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <span className="font-medium">Valência (matiz):</span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400 inline-block" />
+              A — Adaptativo
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-rose-200 border border-rose-400 inline-block" />
+              D — Desadaptativo
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-gray-50 border border-dashed border-gray-300 inline-block" />
+              Não registrado
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <span className="font-medium">Escore (saturação):</span>
+            <span>1–3 mais claro</span>
+            <span>4–6 intermediário</span>
+            <span>7–10 mais escuro</span>
+          </div>
         </div>
       </div>
 
-      {/* Painel lateral */}
+      {/* Painel lateral — as duas valências da mesma célula, lado a lado */}
       {panel && (
         <>
-          <div
-            className="fixed inset-0 bg-black/20 z-20"
-            onClick={closePanel}
-          />
-          <aside className="fixed right-0 top-0 h-full w-full max-w-sm bg-white shadow-2xl z-30 flex flex-col">
-            {/* Painel header */}
+          <div className="fixed inset-0 bg-black/20 z-20" onClick={closePanel} />
+          <aside className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-30 flex flex-col">
             <div className="px-5 py-4 border-b border-gray-100 flex items-start justify-between">
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">
-                  {dimLabel(panel.dimension)} — {lvlLabel(panel.level)}
+                  {DIMENSION_LABELS[panel.dimension]} —{" "}
+                  {LEVEL_LABELS[panel.level]}
                 </p>
                 <h2 className="text-base font-semibold text-gray-900">
-                  Avaliação de Severidade
+                  Processos adaptativos e desadaptativos
                 </h2>
               </div>
               <button
@@ -343,133 +425,119 @@ export default function EEMMForm() {
               </button>
             </div>
 
-            {/* Painel body */}
-            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
-              {/* Score */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Nível de Severidade
-                </label>
+            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+              {VALENCES.map((valence) => {
+                const draft = panel.drafts[valence];
+                const accent = VALENCE_ACCENT[valence];
 
-                {/* Score display */}
-                <div className="flex items-center justify-center mb-4">
-                  <div
-                    className={`w-20 h-20 rounded-full border-4 flex flex-col items-center justify-center ${
-                      panel.score === 0
-                        ? "border-gray-200 text-gray-300"
-                        : panel.score <= 3
-                        ? "border-green-400 text-green-700"
-                        : panel.score <= 6
-                        ? "border-yellow-400 text-yellow-700"
-                        : "border-red-400 text-red-700"
-                    }`}
+                return (
+                  <section
+                    key={valence}
+                    className="border border-gray-200 rounded-xl p-4 space-y-4"
                   >
-                    <span className="text-2xl font-bold leading-none">
-                      {panel.score === 0 ? "—" : panel.score}
-                    </span>
-                    {panel.score > 0 && (
-                      <span className="text-xs opacity-60">/10</span>
-                    )}
-                  </div>
-                </div>
+                    <div className="flex items-center justify-between">
+                      <h3
+                        className={`text-sm font-semibold flex items-center gap-2 ${accent.label}`}
+                      >
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full ${accent.dot}`}
+                        />
+                        {VALENCE_LABELS[valence]}
+                      </h3>
+                      <div
+                        className={`w-12 h-12 rounded-full border-4 flex items-center justify-center ${
+                          draft.score === 0
+                            ? "border-gray-200 text-gray-300"
+                            : accent.ring
+                        }`}
+                      >
+                        <span className="text-base font-bold leading-none">
+                          {draft.score === 0 ? "—" : draft.score}
+                        </span>
+                      </div>
+                    </div>
 
-                {/* Slider */}
-                <input
-                  type="range"
-                  min={0}
-                  max={10}
-                  value={panel.score}
-                  onChange={(e) =>
-                    setPanel((prev) =>
-                      prev
-                        ? { ...prev, score: Number(e.target.value), saved: false }
-                        : prev
-                    )
-                  }
-                  className="w-full accent-blue-600"
-                />
-                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>0 — Não avaliado</span>
-                  <span>10 — Máximo</span>
-                </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-2">
+                        Nível de Severidade
+                      </label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={10}
+                        value={draft.score}
+                        onChange={(e) =>
+                          updateDraft(valence, {
+                            score: Number(e.target.value),
+                            saved: false,
+                          })
+                        }
+                        className="w-full accent-blue-600"
+                      />
+                      <div className="grid grid-cols-11 gap-1 mt-2">
+                        {Array.from({ length: 11 }, (_, i) => (
+                          <button
+                            key={i}
+                            onClick={() =>
+                              updateDraft(valence, { score: i, saved: false })
+                            }
+                            className={`text-xs py-1 rounded font-medium transition-colors ${
+                              draft.score === i
+                                ? i === 0
+                                  ? "bg-gray-300 text-gray-700"
+                                  : `${accent.button} text-white`
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                          >
+                            {i}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                        <span>0 — Não registrado</span>
+                        <span>10 — Máximo</span>
+                      </div>
+                    </div>
 
-                {/* Quick buttons */}
-                <div className="grid grid-cols-11 gap-1 mt-3">
-                  {Array.from({ length: 11 }, (_, i) => (
-                    <button
-                      key={i}
-                      onClick={() =>
-                        setPanel((prev) =>
-                          prev ? { ...prev, score: i, saved: false } : prev
-                        )
-                      }
-                      className={`text-xs py-1 rounded font-medium transition-colors ${
-                        panel.score === i
-                          ? i === 0
-                            ? "bg-gray-300 text-gray-700"
-                            : i <= 3
-                            ? "bg-green-500 text-white"
-                            : i <= 6
-                            ? "bg-yellow-500 text-white"
-                            : "bg-red-500 text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
-                    >
-                      {i}
-                    </button>
-                  ))}
-                </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                        Notas Clínicas
+                      </label>
+                      <textarea
+                        value={draft.notes}
+                        onChange={(e) =>
+                          updateDraft(valence, {
+                            notes: e.target.value,
+                            saved: false,
+                          })
+                        }
+                        rows={3}
+                        placeholder={`Processo ${VALENCE_LABELS[
+                          valence
+                        ].toLowerCase()} observado nesta célula...`}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      />
+                    </div>
 
-                {panel.score > 0 && (
-                  <p className="text-xs text-center mt-2 font-medium">
-                    {panel.score <= 3 ? (
-                      <span className="text-green-600">Leve</span>
-                    ) : panel.score <= 6 ? (
-                      <span className="text-yellow-600">Moderado</span>
-                    ) : (
-                      <span className="text-red-600">Grave</span>
-                    )}
-                  </p>
-                )}
-              </div>
-
-              {/* Notas */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notas Clínicas
-                </label>
-                <textarea
-                  value={panel.notes}
-                  onChange={(e) =>
-                    setPanel((prev) =>
-                      prev
-                        ? { ...prev, notes: e.target.value, saved: false }
-                        : prev
-                    )
-                  }
-                  rows={6}
-                  placeholder="Observações clínicas sobre esta célula..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Painel footer */}
-            <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
-              <span className="text-xs text-gray-400">
-                {panel.saved ? (
-                  <span className="text-green-600">✓ Salvo</span>
-                ) : (
-                  "Auto-save ao fechar"
-                )}
-              </span>
-              <button
-                onClick={() => savePanel()}
-                disabled={panel.saving}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                {panel.saving ? "Salvando..." : "Salvar"}
-              </button>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">
+                        {draft.saved ? (
+                          <span className="text-green-600">✓ Salvo</span>
+                        ) : (
+                          "Auto-save ao fechar"
+                        )}
+                      </span>
+                      <button
+                        onClick={() => saveValence(panel, valence)}
+                        disabled={draft.saving}
+                        className={`${accent.button} disabled:opacity-50 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors`}
+                      >
+                        {draft.saving ? "Salvando..." : "Salvar"}
+                      </button>
+                    </div>
+                  </section>
+                );
+              })}
             </div>
           </aside>
         </>
