@@ -47,3 +47,15 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Banco de dados operacional (dados clinicos) — nunca versionar.
+# Ate o Sprint 2 estes arquivos eram rastreados pelo Git, o que constituia um
+# canal de retencao/exportacao de dados fora do controle da rotina de eliminacao
+# descrita na Sec. 4.10. Removidos do tracking com `git rm --cached`; a presenca
+# em commits anteriores permanece como limitacao documentada (o historico nao foi
+# reescrito, por decisao deliberada).
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.db

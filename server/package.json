@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
+    "build": "tsc --noEmit",
+    "start": "ts-node -r tsconfig-paths/register src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

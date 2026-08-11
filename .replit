@@ -1,18 +1,26 @@
 modules = ["nodejs-24", "nix"]
 
-[[artifacts]]
-id = "artifacts/api-server"
-
-[[artifacts]]
-id = "artifacts/mockup-sandbox"
+# Sprint 2 — convergencia de repositorio.
+#
+# As entradas [[artifacts]] foram removidas. Elas registravam para deploy o par
+# artifacts/api-server + artifacts/eemm-client, que era uma copia divergente do
+# artefato (eixo de niveis trocado pelos operadores evolucionarios no commit
+# 336fe44) e que nunca recebeu as correcoes aplicadas em server/ e client/.
+# Esses diretorios foram eliminados; o snapshot de seguranca esta na tag
+# `pre-sprint2-artifacts-snapshot`.
+#
+# O deploy agora aponta para a copia canonica (server/ + client/), a mesma que os
+# [workflows] abaixo ja executavam em desenvolvimento. Em producao o Express de
+# server/ serve tambem o build estatico de client/dist, de modo que o par publica
+# como uma unica instancia.
+#
+# server/ e client/ NAO sao membros do pnpm workspace (ver packages em
+# pnpm-workspace.yaml) — cada um tem seu proprio package-lock.json e usa npm.
 
 [deployment]
-router = "application"
 deploymentTarget = "autoscale"
-
-[deployment.postBuild]
-args = ["pnpm", "store", "prune"]
-env = { "CI" = "true" }
+build = ["sh", "-c", "cd server && npm ci && npm run build && cd ../client && npm ci && npm run build"]
+run = ["sh", "-c", "cd server && NODE_ENV=production npm run start"]
 
 [workflows]
 runButton = "Project"
