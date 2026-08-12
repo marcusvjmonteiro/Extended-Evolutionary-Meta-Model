@@ -105,6 +105,34 @@ const VALENCE_SHORT: Record<Valence, string> = {
   maladaptive: "D",
 };
 
+/**
+ * Um registro está NÃO CARACTERIZADO quando tem escore de severidade mas nenhuma
+ * caracterização processual — o campo de notas que sustenta o atributo A4 do
+ * critério de conformidade (§4.8.4).
+ *
+ * A Rodada 3 da auditoria registrou que o artefato oferta A4 nas 32 células e não o
+ * exige em nenhuma, e que nada distinguia visualmente uma célula caracterizada de
+ * uma apenas pontuada. Este predicado é a base da sinalização — que é APENAS
+ * sinalização: nada aqui bloqueia salvamento, e um registro só com escore continua
+ * sendo registro válido.
+ *
+ * Cálculo local sobre o dado já em memória, vindo de `GET .../eemm`. Sem endpoint
+ * novo, sem campo novo no schema.
+ */
+function isUncharacterized(
+  severityScore: number | null,
+  notes: string | null
+): boolean {
+  return (
+    severityScore !== null && (notes === null || notes.trim() === "")
+  );
+}
+
+const UNCHARACTERIZED_TOOLTIP =
+  "Esta célula tem processo com severidade registrada, mas sem caracterização do " +
+  "operador evolucionário — a formulação final incluirá o escore sem o contexto " +
+  "qualitativo.";
+
 export default function EEMMForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -161,6 +189,32 @@ export default function EEMMForm() {
         c.valence === valence
     );
   }
+
+  /**
+   * Verdadeiro se PELO MENOS UM dos dois registros da célula (adaptativo ou
+   * desadaptativo) estiver não caracterizado. A célula é a unidade do grid; a
+   * distinção entre qual das duas valências está incompleta fica para o painel.
+   */
+  function cellHasUncharacterized(
+    system: System,
+    operator: Operator
+  ): boolean {
+    return VALENCES.some((valence) => {
+      const cell = getCell(system, operator, valence);
+      return cell
+        ? isUncharacterized(cell.severity_score, cell.notes)
+        : false;
+    });
+  }
+
+  // Contagem agregada para o cabeçalho. Conta REGISTROS (por valência), não
+  // células: é a unidade em que a caracterização é escrita e a que aparece na
+  // formulação final, então é a contagem que corresponde ao que o avaliador
+  // teria de preencher.
+  const uncharacterizedCount = cells.filter((c) =>
+    isUncharacterized(c.severity_score, c.notes)
+  ).length;
+  const scoredCount = cells.filter((c) => c.severity_score !== null).length;
 
   function openPanel(system: System, operator: Operator) {
     const drafts = {} as Record<Valence, ValenceDraft>;
@@ -303,6 +357,29 @@ export default function EEMMForm() {
             <p className="text-xs text-gray-400">
               Formulação EEMM — sistema × operador evolucionário × valência
             </p>
+            {/*
+              Contador de completude processual. Só aparece quando há o que
+              contar — "0 de 0" num caso recém-criado seria ruído.
+
+              Conta REGISTROS pontuados, não as 32 células: é a unidade em que a
+              caracterização é escrita e a que aparece na formulação. Não é o
+              indicador de progresso geral (x/64) previsto em outro item; este
+              mede caracterização entre o que já foi pontuado.
+            */}
+            {uncharacterizedCount > 0 && (
+              <p
+                className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5"
+                title={UNCHARACTERIZED_TOOLTIP}
+              >
+                <span
+                  aria-hidden="true"
+                  className="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block"
+                />
+                {uncharacterizedCount} de {scoredCount}{" "}
+                {scoredCount === 1 ? "registro" : "registros"} sem caracterização
+                processual
+              </p>
+            )}
           </div>
           {/* Transparencia de retencao (T8): fica no cabecalho, visivel durante
               todo o fluxo de registro — nao atras de um menu. O avaliador precisa
@@ -373,24 +450,53 @@ export default function EEMMForm() {
                     {OPERATORS.map((operator) => {
                       const isActive =
                         panel?.system === system && panel?.operator === operator;
+                      const uncharacterized = cellHasUncharacterized(
+                        system,
+                        operator
+                      );
 
                       return (
                         <td
                           key={operator}
                           onClick={() => openPanel(system, operator)}
-                          className={`border-r last:border-r-0 border-gray-100 p-2 cursor-pointer transition-colors ${
+                          title={uncharacterized ? UNCHARACTERIZED_TOOLTIP : undefined}
+                          className={`relative border-r last:border-r-0 border-gray-100 p-2 cursor-pointer transition-colors ${
                             isActive ? "bg-blue-50" : "hover:bg-gray-50"
                           }`}
                         >
+                          {/*
+                            Marcador de célula não caracterizada.
+
+                            Deliberadamente NÃO é contorno tracejado: `halfClass`
+                            já usa `border-dashed` para significar "valência não
+                            registrada", e reaproveitar o tracejado aqui faria dois
+                            estados diferentes falarem a mesma língua visual.
+
+                            Cinza-ardósia, não âmbar nem vermelho: isto não é erro
+                            nem alerta de validação — é lacuna de completude num
+                            registro que é válido do jeito que está.
+                          */}
+                          {uncharacterized && (
+                            <span
+                              aria-hidden="true"
+                              className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-slate-400 ring-2 ring-white"
+                            />
+                          )}
                           <div
                             className={`flex gap-1 rounded-lg p-1 ${
                               isActive ? "ring-2 ring-blue-300" : ""
                             }`}
                           >
                             {VALENCES.map((valence) => {
-                              const score =
-                                getCell(system, operator, valence)
-                                  ?.severity_score ?? null;
+                              const half = getCell(system, operator, valence);
+                              const score = half?.severity_score ?? null;
+                              // O title da metade cobre quase toda a area da
+                              // celula e mascararia o title do <td>. Por isso a
+                              // explicacao e anexada aqui tambem, ja referida a
+                              // valencia especifica sob o cursor.
+                              const halfUncharacterized = half
+                                ? isUncharacterized(half.severity_score, half.notes)
+                                : false;
                               return (
                                 <div
                                   key={valence}
@@ -398,6 +504,10 @@ export default function EEMMForm() {
                                     OPERATOR_LABELS[operator]
                                   } — ${VALENCE_LABELS[valence]}: ${
                                     score ?? "não registrado"
+                                  }${
+                                    halfUncharacterized
+                                      ? `\n\n${UNCHARACTERIZED_TOOLTIP}`
+                                      : ""
                                   }`}
                                   className={`flex-1 rounded-md border px-2 py-2 min-h-14 flex flex-col items-center justify-center gap-0.5 transition-all ${halfClass(
                                     valence,
@@ -685,6 +795,34 @@ export default function EEMMForm() {
                         ].toLowerCase()}...`}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                       />
+                      {/*
+                        Aviso de seção não caracterizada.
+
+                        Lê o RASCUNHO, não o registro salvo: assim aparece assim que
+                        o escore é definido e some no primeiro caractere digitado,
+                        sem esperar salvamento. É orientação em tempo real, não
+                        veredito sobre o que está no banco.
+
+                        Texto secundário, sem ícone de erro e sem vermelho: a seção
+                        continua salvável exatamente como está, e o aviso não pode
+                        parecer mensagem de validação de formulário.
+                      */}
+                      {isUncharacterized(
+                        draft.score > 0 ? draft.score : null,
+                        draft.notes
+                      ) && (
+                        <p className="mt-1.5 text-[11px] text-slate-500 leading-relaxed flex gap-1.5">
+                          <span
+                            aria-hidden="true"
+                            className="mt-1 w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"
+                          />
+                          <span>
+                            Sem caracterização processual — esta seção ficará
+                            estruturalmente completa, mas processualmente vazia na
+                            formulação final.
+                          </span>
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between">
