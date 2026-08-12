@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import db from "../database";
+import { deleteCaseAndVerify } from "../services/purge";
 
 const router = Router();
 
@@ -67,8 +68,23 @@ router.delete("/:id", (req: Request, res: Response) => {
       return;
     }
 
-    db.prepare("DELETE FROM patients WHERE id = ?").run(req.params.id);
-    res.status(204).send();
+    // A exclusao e a verificacao de integridade vivem no mesmo servico usado pela
+    // purga automatica — a query nao e duplicada aqui.
+    const verification = deleteCaseAndVerify(Number(req.params.id));
+
+    // Responde 200 com o resultado da verificacao, e nao 204 vazio: a afirmacao do
+    // Sec. 4.10 sobre integridade da eliminacao fica demonstravel na propria
+    // resposta da chamada, sem depender de um log interno ou de inspecao do banco.
+    res.status(verification.verified ? 200 : 500).json({
+      deleted: true,
+      verified: verification.verified,
+      patientId: verification.patientId,
+      remaining: {
+        patients: verification.patientRowsRemaining,
+        eemm_cells: verification.cellRowsRemaining,
+        eemm_cells_legacy_backup_v2: verification.legacyBackupRowsRemaining,
+      },
+    });
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
   }
