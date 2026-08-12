@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && npm run postbuild:alias",
+    "postbuild:alias": "node -e \"const fs=require('fs');fs.rmSync('node_modules/@shared',{recursive:true,force:true});fs.cpSync('dist/shared','node_modules/@shared',{recursive:true});console.log('[build] @shared exposto em node_modules/@shared')\"",
     "start": "node dist/server/src/index.js",
     "typecheck": "tsc --noEmit"
   },

@@ -196,7 +196,56 @@ Dois riscos que só a revisão estática pegaria:
    **zero links de workspace**, com `resolved` em 151/152 e 142/143 entradas. `npm ci` roda
    isolado nos dois pacotes.
 
-### 4.5 O que NÃO foi verificado
+### 4.5 Dois defeitos introduzidos por este sprint, achados na auditoria e corrigidos
+
+Ambos vieram da mesma decisão — trocar `start` de `ts-node src/` para
+`node dist/server/src/index.js` — e ambos quebrariam o **deploy do Replit**, que roda
+`cd server && NODE_ENV=production npm run start`. Nenhum dos dois apareceria no container,
+onde o Dockerfile compensa por outro caminho. Foram achados na Rodada 3 da auditoria, ao
+exercitar o cenário do `.replit`.
+
+**Defeito 1 — `npm run start` não subia fora do container.**
+
+```
+Error: Cannot find module '@shared/eemm-types'
+Require stack: .../server/dist/server/src/database.js
+```
+
+O `@shared` só resolvia porque o **Dockerfile** criava `node_modules/@shared`. Fora dele, nada
+criava. Corrigido movendo o passo para o próprio build, de forma portátil:
+
+```json
+"build": "tsc -p tsconfig.build.json && npm run postbuild:alias",
+"postbuild:alias": "node -e \"...fs.cpSync('dist/shared','node_modules/@shared',...)\""
+```
+
+`fs.cpSync` em vez de `cp -r` porque o build também roda em Windows. O Dockerfile **mantém**
+seu próprio `cp`: o `node_modules` da imagem final vem do estágio `server-deps`, não do de
+build, e lá o `@shared` não existe.
+
+**Defeito 2 — o build do client não seria servido no layout compilado.**
+
+O fallback era `path.join(__dirname, "..", "..", "client", "dist")`, correto para ts-node
+rodando de `src/` e errado para `node` rodando de `dist/server/src/` — apontaria para dentro
+de `dist/`. Modo de falha traiçoeiro: o servidor sobe, `/api` responde normalmente, e **toda
+rota de página devolve 404**. Corrigido com `resolveClientDist()`, que testa a existência de
+`index.html` nos dois candidatos e loga qual escolheu, avisando alto se não achar nenhum.
+
+Verificação após a correção, no cenário exato do `.replit` (sem `CLIENT_DIST_PATH`):
+
+```
+[static] servindo build do client de <repo>\client\dist
+Server running on port 3998
+GET /patients          -> HTTP 200, devolve o index.html do SPA
+GET /health            -> {"ok":true}          (/api mantém precedência)
+POST /api/patients     -> 201                  (banco no DATABASE_PATH indicado)
+```
+
+Registro honesto: o pedido do sprint era preparar a containerização, e a preparação
+**introduziu regressão num caminho de execução já existente**. A auditoria a pegou porque
+exercitou o cenário do `.replit`, não só o do container.
+
+### 4.6 O que NÃO foi verificado
 
 **O build real do container não foi executado.** Não há daemon Docker neste ambiente.
 

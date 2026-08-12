@@ -104,8 +104,12 @@ COPY --from=client-build /app/client/dist /app/client/dist
 # O JS emitido conserva `require("@shared/eemm-types")`. Em vez de carregar
 # tsconfig-paths em runtime (dependência extra + hook de resolução no processo de
 # produção), o diretório compilado é exposto como um pacote em node_modules e a
-# resolução nativa do Node dá conta sozinha. Verificado localmente contra o build
-# real antes de entrar aqui.
+# resolução nativa do Node dá conta sozinha.
+#
+# `npm run build` já faz isso (script `postbuild:alias`), mas o passo precisa ser
+# repetido AQUI: o node_modules desta imagem não vem do estágio de build, vem do
+# `server-deps` — e lá o `@shared` não existe. Sem esta linha o container sobe e
+# morre no primeiro require. Verificado nos dois caminhos.
 RUN cp -r ./dist/shared ./node_modules/@shared
 
 # Diretório de dados: o SQLite precisa de local gravável FORA da árvore de código.
