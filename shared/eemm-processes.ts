@@ -54,12 +54,55 @@ import type { System, Valence } from "./eemm-types";
  */
 export type ProcessValence = Valence | "context_dependent";
 
+/**
+ * Registro de que a atribuição sistema→processo foi conferida contra a literatura
+ * fonte, e não apenas julgada plausível por juízo clínico geral.
+ *
+ * Os quatro campos são obrigatórios QUANDO o objeto existe: uma procedência sem
+ * localização exata, ou sem quem conferiu e quando, não é procedência — é uma
+ * afirmação de que alguém, em algum momento, achou que estava certo. O que torna
+ * este campo auditável é justamente não admitir preenchimento parcial.
+ *
+ * `location` deve apontar o ponto exato consultado (página, seção ou figura), não
+ * a obra inteira. "Hayes et al. (2020)" identifica a fonte; "Figura 1, p. 12"
+ * permite a um terceiro reabrir a fonte e conferir a mesma coisa.
+ */
+export interface ProcessSource {
+  /** Referência bibliográfica curta. Ex.: "Hayes et al. (2020)". */
+  reference: string;
+  /** Localização exata dentro da fonte. Ex.: "Figura 1, p. 12". */
+  location: string;
+  /** Quem conferiu. Ex.: "Marcus". */
+  verifiedBy: string;
+  /** Data da conferência, em ISO. Ex.: "2026-08-13". */
+  verifiedAt: string;
+}
+
 export interface ChangeProcess {
   /** Nome do processo em português. */
   name: string;
   /** Descrição operacional curta, definicional — nunca prescritiva. */
   description: string;
   typicalValence: ProcessValence;
+  /**
+   * Procedência bibliográfica da atribuição. OPCIONAL de propósito.
+   *
+   * Torná-lo obrigatório quebraria a compilação para os 17 processos que hoje não
+   * têm base citável — e o efeito prático seria pressão para preencher qualquer
+   * coisa e destravar o build. Como o campo existe para registrar verificação
+   * real, um tipo que induz preenchimento apressado destrói o que ele deveria
+   * garantir.
+   *
+   * A ausência deste campo é, portanto, informação: significa que a atribuição
+   * ainda não foi conferida contra a fonte. O comentário de marcação no item
+   * correspondente e a linha em `docs/verificacao-processos-eemm.md` dizem a mesma
+   * coisa, e os três só devem sair juntos.
+   *
+   * (A string literal do marcador não é reproduzida aqui de propósito: a contagem
+   * de itens pendentes é feita por busca textual, e uma menção em prosa seria
+   * contada como se fosse um item — inflando o número em um.)
+   */
+  source?: ProcessSource;
 }
 
 export const PROCESS_VALENCE_LABELS: Record<ProcessValence, string> = {
