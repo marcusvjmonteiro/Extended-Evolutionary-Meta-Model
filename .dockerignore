@@ -1,0 +1,64 @@
+# Dependências — reinstaladas dentro da imagem.
+# Crítico, não apenas otimização: server/node_modules contém o binário nativo
+# better_sqlite3.node compilado para o host (Windows). Copiá-lo para uma imagem
+# linux produziria um módulo que instala "com sucesso" e explode ao ser carregado.
+node_modules/
+**/node_modules/
+
+# Histórico de versão
+.git/
+.gitignore
+.gitattributes
+
+# ---------------------------------------------------------------------------
+# BANCO DE DADOS LOCAL — exclusão de governança de dados, não de tamanho.
+#
+# O arquivo SQLite de desenvolvimento contém registros de casos de teste. Assá-lo
+# dentro de uma imagem de container é publicação de dado: a imagem é distribuível,
+# versionada por camada e sobrevive a qualquer purga por TTL da aplicação — o
+# mesmo tipo de canal de retenção que o §4.10 existe para fechar, e a mesma classe
+# de problema do achado P0 da Rodada 2 da auditoria.
+#
+# No container o banco nasce vazio em /app/data (ver Dockerfile).
+# ---------------------------------------------------------------------------
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+**/*.sqlite
+**/*.sqlite-shm
+**/*.sqlite-wal
+
+# Artefatos de build — reconstruídos nos estágios de build a partir do fonte
+dist/
+**/dist/
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Segredos e configuração local de ambiente
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Diretórios do workspace que não fazem parte do artefato publicável.
+# `lib/` e `artifacts/` foram verificados: nenhum arquivo de server/src, client/src
+# ou shared/ os importa (apontamento já registrado em auditorias anteriores).
+artifacts/
+lib/
+scripts/
+.agents/
+.config/
+.local/
+.replit
+.replitignore
+
+# Documentação e logs de sprint — não entram na imagem de execução
+*.md
+!README.md
+
+# Ruído de editor e SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

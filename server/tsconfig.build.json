@@ -1,0 +1,28 @@
+{
+  // Configuração de EMISSÃO, separada da de checagem (`tsconfig.json`, que roda com
+  // --noEmit). São arquivos distintos de propósito: `npm run typecheck` precisa ser
+  // barato e não deve sujar o disco com dist/, e o build precisa emitir.
+  //
+  // `rootDir: ".."` é obrigatório, não estilístico: o programa inclui `src/**/*` E
+  // `../shared/**/*`, então o diretório raiz comum dos dois é a raiz do repositório.
+  // Sem declará-lo, o tsc o infere igual — mas falha se algum dia o conjunto de
+  // arquivos mudar, e o layout de saída passaria a variar em silêncio. Declarado, o
+  // layout emitido é estável e previsível:
+  //
+  //   dist/server/src/index.js      <- ponto de entrada
+  //   dist/shared/eemm-types.js     <- alvo do alias @shared/*
+  //
+  // O alias `@shared/*` sobrevive na saída como `require("@shared/...")`. A resolução
+  // em produção NÃO usa tsconfig-paths: o Dockerfile expõe `dist/shared` como
+  // `node_modules/@shared`, e a resolução nativa do Node dá conta. Ver Dockerfile.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "..",
+    "outDir": "./dist",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": ["src/**/*", "../shared/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
