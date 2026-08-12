@@ -2,13 +2,16 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   DIMENSIONS,
-  LEVELS,
+  ADDITIONAL_LEVELS,
+  OPERATORS,
   VALENCES,
-  DIMENSION_LABELS,
-  LEVEL_LABELS,
+  SYSTEM_LABELS,
+  OPERATOR_LABELS,
   VALENCE_LABELS,
+  SYSTEM_GROUP_LABELS,
 } from "@shared/eemm-types";
-import type { Dimension, Level, Valence } from "@shared/eemm-types";
+import type { System, Operator, Valence } from "@shared/eemm-types";
+import type { ChangeProcess, ProcessValence } from "@shared/eemm-processes";
 
 interface Patient {
   id: number;
@@ -16,9 +19,16 @@ interface Patient {
   date_of_birth: string | null;
 }
 
+/** Resposta de GET /api/eemm/processes — buscada uma vez na montagem da página. */
+interface ProcessesResponse {
+  processes: Record<System, ChangeProcess[]>;
+  processValenceLabels: Record<ProcessValence, string>;
+  valenceDefinitions: Record<Valence, string>;
+}
+
 interface Cell {
-  dimension: Dimension;
-  level: Level;
+  system: System;
+  operator: Operator;
   valence: Valence;
   severity_score: number | null;
   notes: string | null;
@@ -33,10 +43,20 @@ interface ValenceDraft {
 }
 
 interface PanelState {
-  dimension: Dimension;
-  level: Level;
+  system: System;
+  operator: Operator;
   drafts: Record<Valence, ValenceDraft>;
 }
+
+/**
+ * Grupos de linhas da matriz. Existem apenas para espelhar visualmente as chaves
+ * "Dimensions" / "Levels" da Figura 1 de Hayes et al. (2020) — as oito linhas são,
+ * estruturalmente, irmãs do MESMO eixo. Nenhum cruzamento é produzido aqui.
+ */
+const SYSTEM_GROUPS: { label: string; systems: readonly System[] }[] = [
+  { label: SYSTEM_GROUP_LABELS.dimensions, systems: DIMENSIONS },
+  { label: SYSTEM_GROUP_LABELS.additionalLevels, systems: ADDITIONAL_LEVELS },
+];
 
 /**
  * Codificação visual da célula bivalente:
@@ -94,13 +114,20 @@ export default function EEMMForm() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [panel, setPanel] = useState<PanelState | null>(null);
+  const [processData, setProcessData] = useState<ProcessesResponse | null>(null);
+  // Ajuda contextual aberta, por valência — cada seção do painel controla a sua.
+  const [helpOpen, setHelpOpen] = useState<Record<Valence, boolean>>({
+    adaptive: false,
+    maladaptive: false,
+  });
 
   async function loadData() {
     setLoading(true);
     try {
-      const [patRes, cellRes] = await Promise.all([
+      const [patRes, cellRes, procRes] = await Promise.all([
         fetch(`/api/patients/${id}`),
         fetch(`/api/patients/${id}/eemm`),
+        fetch(`/api/eemm/processes`),
       ]);
       if (patRes.status === 404) {
         setNotFound(true);
@@ -110,6 +137,7 @@ export default function EEMMForm() {
       const cls = await cellRes.json();
       setPatient(pat);
       setCells(cls);
+      if (procRes.ok) setProcessData(await procRes.json());
     } catch {
       /* ignore */
     } finally {
@@ -122,22 +150,22 @@ export default function EEMMForm() {
   }, [id]);
 
   function getCell(
-    dimension: Dimension,
-    level: Level,
+    system: System,
+    operator: Operator,
     valence: Valence
   ): Cell | undefined {
     return cells.find(
       (c) =>
-        c.dimension === dimension &&
-        c.level === level &&
+        c.system === system &&
+        c.operator === operator &&
         c.valence === valence
     );
   }
 
-  function openPanel(dimension: Dimension, level: Level) {
+  function openPanel(system: System, operator: Operator) {
     const drafts = {} as Record<Valence, ValenceDraft>;
     for (const valence of VALENCES) {
-      const cell = getCell(dimension, level, valence);
+      const cell = getCell(system, operator, valence);
       drafts[valence] = {
         score: cell?.severity_score ?? 0,
         notes: cell?.notes ?? "",
@@ -145,7 +173,8 @@ export default function EEMMForm() {
         saved: false,
       };
     }
-    setPanel({ dimension, level, drafts });
+    setPanel({ system, operator, drafts });
+    setHelpOpen({ adaptive: false, maladaptive: false });
   }
 
   function updateDraft(valence: Valence, patch: Partial<ValenceDraft>) {
@@ -175,8 +204,8 @@ export default function EEMMForm() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          dimension: p.dimension,
-          level: p.level,
+          system: p.system,
+          operator: p.operator,
           valence,
           severity_score: draft.score > 0 ? draft.score : null,
           notes: draft.notes.trim() || null,
@@ -186,8 +215,8 @@ export default function EEMMForm() {
         const updated: Cell = await res.json();
         setCells((prev) =>
           prev.map((c) =>
-            c.dimension === updated.dimension &&
-            c.level === updated.level &&
+            c.system === updated.system &&
+            c.operator === updated.operator &&
             c.valence === updated.valence
               ? updated
               : c
@@ -203,7 +232,7 @@ export default function EEMMForm() {
   }
 
   function isDirty(p: PanelState, valence: Valence): boolean {
-    const cell = getCell(p.dimension, p.level, valence);
+    const cell = getCell(p.system, p.operator, valence);
     const draft = p.drafts[valence];
     return (
       draft.score !== (cell?.severity_score ?? 0) ||
@@ -211,7 +240,7 @@ export default function EEMMForm() {
     );
   }
 
-  // Autosave ao fechar — agora por valência, não pela célula inteira.
+  // Autosave ao fechar — por valência, não pela célula inteira.
   const closePanel = useCallback(async () => {
     if (!panel) return;
     for (const valence of VALENCES) {
@@ -272,94 +301,122 @@ export default function EEMMForm() {
           <div>
             <h1 className="text-lg font-bold text-gray-900">{patient.name}</h1>
             <p className="text-xs text-gray-400">
-              Formulação EEMM — dimensão × nível × valência
+              Formulação EEMM — sistema × operador evolucionário × valência
             </p>
           </div>
+          <button
+            onClick={() => navigate(`/patients/${id}/formulation`)}
+            className="ml-auto bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Gerar Formulação Final
+          </button>
         </div>
       </div>
 
-      {/* Grid 6 dimensões × 3 níveis, cada célula bivalente */}
+      {/* Grid 8 sistemas × 4 operadores, cada célula bivalente */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr>
-                <th className="w-44 min-w-44 bg-gray-50 border-b border-r border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Dimensão
+                <th className="w-48 min-w-48 bg-gray-50 border-b border-r border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Sistema
                 </th>
-                {LEVELS.map((level) => (
+                {OPERATORS.map((operator) => (
                   <th
-                    key={level}
-                    className="bg-gray-50 border-b border-r last:border-r-0 border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600"
+                    key={operator}
+                    className="bg-gray-50 border-b border-r last:border-r-0 border-gray-200 px-3 py-3 text-center text-xs font-semibold text-gray-600"
                   >
-                    {LEVEL_LABELS[level]}
+                    {OPERATOR_LABELS[operator]}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody>
-              {DIMENSIONS.map((dimension, di) => (
-                <tr
-                  key={dimension}
-                  className={
-                    di < DIMENSIONS.length - 1 ? "border-b border-gray-100" : ""
-                  }
-                >
-                  <td className="bg-gray-50 border-r border-gray-200 px-4 py-4 font-semibold text-gray-700 text-sm">
-                    {DIMENSION_LABELS[dimension]}
+            {/*
+              Um <tbody> por grupo, com uma linha de cabeçalho de seção. O
+              agrupamento é apenas visual (HU2 — correspondência com o raciocínio
+              clínico e com as chaves da Figura 1); as oito linhas pertencem ao
+              mesmo eixo.
+            */}
+            {SYSTEM_GROUPS.map((group) => (
+              <tbody key={group.label}>
+                <tr>
+                  <td
+                    colSpan={OPERATORS.length + 1}
+                    className="bg-slate-100 border-y border-slate-200 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                  >
+                    {group.label}
                   </td>
-                  {LEVELS.map((level) => {
-                    const isActive =
-                      panel?.dimension === dimension && panel?.level === level;
+                </tr>
+                {group.systems.map((system, si) => (
+                  <tr
+                    key={system}
+                    className={
+                      si < group.systems.length - 1
+                        ? "border-b border-gray-100"
+                        : ""
+                    }
+                  >
+                    <td className="bg-gray-50 border-r border-gray-200 px-4 py-4 font-semibold text-gray-700 text-sm">
+                      {SYSTEM_LABELS[system]}
+                    </td>
+                    {OPERATORS.map((operator) => {
+                      const isActive =
+                        panel?.system === system && panel?.operator === operator;
 
-                    return (
-                      <td
-                        key={level}
-                        onClick={() => openPanel(dimension, level)}
-                        className={`border-r last:border-r-0 border-gray-100 p-2 cursor-pointer transition-colors ${
-                          isActive ? "bg-blue-50" : "hover:bg-gray-50"
-                        }`}
-                      >
-                        <div
-                          className={`flex gap-1 rounded-lg p-1 ${
-                            isActive ? "ring-2 ring-blue-300" : ""
+                      return (
+                        <td
+                          key={operator}
+                          onClick={() => openPanel(system, operator)}
+                          className={`border-r last:border-r-0 border-gray-100 p-2 cursor-pointer transition-colors ${
+                            isActive ? "bg-blue-50" : "hover:bg-gray-50"
                           }`}
                         >
-                          {VALENCES.map((valence) => {
-                            const score =
-                              getCell(dimension, level, valence)
-                                ?.severity_score ?? null;
-                            return (
-                              <div
-                                key={valence}
-                                title={`${VALENCE_LABELS[valence]} — ${
-                                  score ?? "não registrado"
-                                }`}
-                                className={`flex-1 rounded-md border px-2 py-2 min-h-14 flex flex-col items-center justify-center gap-0.5 transition-all ${halfClass(
-                                  valence,
-                                  score
-                                )}`}
-                              >
-                                <span className="text-[10px] font-bold uppercase opacity-70 leading-none">
-                                  {VALENCE_SHORT[valence]}
-                                </span>
-                                {score ? (
-                                  <span className="text-base font-bold leading-none">
-                                    {score}
+                          <div
+                            className={`flex gap-1 rounded-lg p-1 ${
+                              isActive ? "ring-2 ring-blue-300" : ""
+                            }`}
+                          >
+                            {VALENCES.map((valence) => {
+                              const score =
+                                getCell(system, operator, valence)
+                                  ?.severity_score ?? null;
+                              return (
+                                <div
+                                  key={valence}
+                                  title={`${SYSTEM_LABELS[system]} × ${
+                                    OPERATOR_LABELS[operator]
+                                  } — ${VALENCE_LABELS[valence]}: ${
+                                    score ?? "não registrado"
+                                  }`}
+                                  className={`flex-1 rounded-md border px-2 py-2 min-h-14 flex flex-col items-center justify-center gap-0.5 transition-all ${halfClass(
+                                    valence,
+                                    score
+                                  )}`}
+                                >
+                                  <span className="text-[10px] font-bold uppercase opacity-70 leading-none">
+                                    {VALENCE_SHORT[valence]}
                                   </span>
-                                ) : (
-                                  <span className="text-xs leading-none">—</span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
+                                  {score ? (
+                                    <span className="text-base font-bold leading-none">
+                                      {score}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs leading-none">
+                                      —
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            ))}
           </table>
         </div>
 
@@ -386,6 +443,10 @@ export default function EEMMForm() {
             <span>4–6 intermediário</span>
             <span>7–10 mais escuro</span>
           </div>
+          <p className="pt-1 leading-relaxed">
+            Os oito sistemas formam um eixo único: "Dimensões" e "Níveis Adicionais"
+            são apenas agrupamentos de leitura, não um cruzamento entre si.
+          </p>
         </div>
       </div>
 
@@ -397,8 +458,8 @@ export default function EEMMForm() {
             <div className="px-5 py-4 border-b border-gray-100 flex items-start justify-between">
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">
-                  {DIMENSION_LABELS[panel.dimension]} —{" "}
-                  {LEVEL_LABELS[panel.level]}
+                  {SYSTEM_LABELS[panel.system]} —{" "}
+                  {OPERATOR_LABELS[panel.operator]}
                 </p>
                 <h2 className="text-base font-semibold text-gray-900">
                   Processos adaptativos e desadaptativos
@@ -436,14 +497,34 @@ export default function EEMMForm() {
                     className="border border-gray-200 rounded-xl p-4 space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h3
-                        className={`text-sm font-semibold flex items-center gap-2 ${accent.label}`}
-                      >
-                        <span
-                          className={`w-2.5 h-2.5 rounded-full ${accent.dot}`}
-                        />
-                        {VALENCE_LABELS[valence]}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3
+                          className={`text-sm font-semibold flex items-center gap-2 ${accent.label}`}
+                        >
+                          <span
+                            className={`w-2.5 h-2.5 rounded-full ${accent.dot}`}
+                          />
+                          {VALENCE_LABELS[valence]}
+                        </h3>
+                        {/* Ajuda no ponto de uso (HU10): abre dentro do proprio
+                            painel de edicao, sem tirar o profissional do fluxo. */}
+                        <button
+                          type="button"
+                          aria-expanded={helpOpen[valence]}
+                          onClick={() =>
+                            setHelpOpen((prev) => ({
+                              ...prev,
+                              [valence]: !prev[valence],
+                            }))
+                          }
+                          title={`O que registrar como ${VALENCE_LABELS[
+                            valence
+                          ].toLowerCase()} neste sistema`}
+                          className="w-5 h-5 rounded-full border border-gray-300 text-gray-500 text-xs font-bold leading-none hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                        >
+                          ?
+                        </button>
+                      </div>
                       <div
                         className={`w-12 h-12 rounded-full border-4 flex items-center justify-center ${
                           draft.score === 0
@@ -456,6 +537,62 @@ export default function EEMMForm() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Conteudo da ajuda contextual — renderizado em CADA secao e
+                        sempre referido explicitamente a valencia da secao, para
+                        nao ficar ambiguo sobre qual metade da celula ele cobre.
+                        Os processos vem indexados por SISTEMA: uma celula de
+                        Biofisiologico ou Sociocultural mostra processos proprios
+                        desse sistema, nao processos psicologicos reaproveitados. */}
+                    {helpOpen[valence] && (
+                      <div className="rounded-lg bg-gray-50 border border-gray-200 p-3 space-y-3 text-xs">
+                        <div>
+                          <p className={`font-semibold mb-1 ${accent.label}`}>
+                            O que conta como {VALENCE_LABELS[valence].toLowerCase()}
+                          </p>
+                          <p className="text-gray-600 leading-relaxed">
+                            {processData?.valenceDefinitions[valence] ??
+                              "Definição indisponível."}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="font-semibold text-gray-700 mb-1.5">
+                            Processos de mudança — {SYSTEM_LABELS[panel.system]}
+                          </p>
+                          {processData ? (
+                            <ul className="space-y-2">
+                              {processData.processes[panel.system].map((proc) => (
+                                <li key={proc.name} className="leading-relaxed">
+                                  <span className="font-medium text-gray-800">
+                                    {proc.name}
+                                  </span>
+                                  <span className="text-gray-400">
+                                    {" "}
+                                    ({processData.processValenceLabels[
+                                      proc.typicalValence
+                                    ] ?? proc.typicalValence})
+                                  </span>
+                                  <br />
+                                  <span className="text-gray-600">
+                                    {proc.description}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-gray-400">
+                              Referências de processos indisponíveis.
+                            </p>
+                          )}
+                          <p className="text-gray-400 mt-2 leading-relaxed">
+                            Lista de referência. A valência indicada é a associação
+                            típica na literatura, não uma classificação do caso — o
+                            registro da valência nesta célula é seu.
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-2">
@@ -499,10 +636,29 @@ export default function EEMMForm() {
                       </div>
                     </div>
 
+                    {/*
+                      Campo de caracterização processual (atributo A4, Sec. 4.8.4).
+                      O rótulo e o texto de apoio NÃO são cosméticos: é o que torna
+                      A4 verificável na prática. Sem eles, o campo lê como "notas
+                      genéricas" e o atributo fica presente em teoria e vazio no uso.
+                    */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                        Notas Clínicas
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Caracterização processual —{" "}
+                        {OPERATOR_LABELS[panel.operator]}
                       </label>
+                      <p className="text-[11px] text-gray-400 mb-1.5 leading-relaxed">
+                        Descreva como este processo se manifesta em termos de{" "}
+                        <span className="font-medium text-gray-500">
+                          {OPERATOR_LABELS[panel.operator].toLowerCase()}
+                        </span>{" "}
+                        para o sistema{" "}
+                        <span className="font-medium text-gray-500">
+                          {SYSTEM_LABELS[panel.system].toLowerCase()}
+                        </span>{" "}
+                        — esta caracterização é o que sustenta a fidelidade do
+                        artefato ao modelo teórico.
+                      </p>
                       <textarea
                         value={draft.notes}
                         onChange={(e) =>
@@ -512,9 +668,11 @@ export default function EEMMForm() {
                           })
                         }
                         rows={3}
-                        placeholder={`Processo ${VALENCE_LABELS[
+                        placeholder={`Como a ${OPERATOR_LABELS[
+                          panel.operator
+                        ].toLowerCase()} se manifesta neste processo ${VALENCE_LABELS[
                           valence
-                        ].toLowerCase()} observado nesta célula...`}
+                        ].toLowerCase()}...`}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                       />
                     </div>
