@@ -290,7 +290,7 @@ corresponde integralmente a um commit.
 
 ## 7. Pendências deixadas em aberto
 
-1. **`docker build` e `docker run` reais**, fora deste ambiente (§4.5). Bloqueante para
+1. **`docker build` e `docker run` reais**, fora deste ambiente (§4.6). Bloqueante para
    qualquer deploy.
 2. **Deploy propriamente dito** — adiado por decisão de custo. Quando ocorrer, o §4.10 precisa
    de reavaliação em pontos que a Rodada 2 já isolou: isolamento de instância (SQLite em disco
