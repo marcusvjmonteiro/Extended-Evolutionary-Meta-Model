@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PatientList from "./pages/PatientList";
 import EEMMForm from "./pages/EEMMForm";
+import Formulation from "./pages/Formulation";
+import NotFound from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -9,6 +11,9 @@ export default function App() {
         <Route path="/" element={<Navigate to="/patients" replace />} />
         <Route path="/patients" element={<PatientList />} />
         <Route path="/patients/:id/eemm" element={<EEMMForm />} />
+        <Route path="/patients/:id/formulation" element={<Formulation />} />
+        {/* Fallback: sem esta rota, URLs nao declaradas rendiam tela em branco. */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
