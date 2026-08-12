@@ -296,6 +296,16 @@ export default function PatientList() {
                 Todas as células da formulação EEMM serão removidas junto. Essa
                 ação não pode ser desfeita.
               </p>
+              {/* Segundo ponto de entrada da pagina de transparencia (T8). Aqui
+                  porque e o momento em que a duvida sobre retencao efetivamente
+                  ocorre ao usuario: na hora de apagar. */}
+              <button
+                type="button"
+                onClick={() => navigate("/privacidade")}
+                className="mt-3 text-sm font-medium text-blue-600 hover:underline text-left"
+              >
+                Saiba mais sobre como e quando seus dados são eliminados
+              </button>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
               <button

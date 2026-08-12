@@ -7,6 +7,7 @@ import patientsRouter from "./routes/patients";
 import eemmRouter from "./routes/eemm";
 import processesRouter from "./routes/processes";
 import formulationRouter from "./routes/formulation";
+import configRouter from "./routes/config";
 import { startPurgeScheduler } from "./services/purge";
 
 const app = express();
@@ -29,6 +30,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
+app.use("/api/config", configRouter);
 app.use("/api/eemm/processes", processesRouter);
 app.use("/api/patients", patientsRouter);
 app.use("/api/patients/:id/eemm", eemmRouter);

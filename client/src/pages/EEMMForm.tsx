@@ -304,9 +304,19 @@ export default function EEMMForm() {
               Formulação EEMM — sistema × operador evolucionário × valência
             </p>
           </div>
+          {/* Transparencia de retencao (T8): fica no cabecalho, visivel durante
+              todo o fluxo de registro — nao atras de um menu. O avaliador precisa
+              conseguir localizar a informacao no momento em que ela lhe ocorre,
+              que e enquanto esta inserindo conteudo, nao depois. */}
+          <button
+            onClick={() => navigate("/privacidade")}
+            className="ml-auto text-sm font-medium text-gray-500 hover:text-blue-600 hover:underline transition-colors"
+          >
+            Privacidade e Retenção de Dados
+          </button>
           <button
             onClick={() => navigate(`/patients/${id}/formulation`)}
-            className="ml-auto bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
             Gerar Formulação Final
           </button>
