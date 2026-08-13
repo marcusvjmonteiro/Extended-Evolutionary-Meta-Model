@@ -157,7 +157,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
         "Detecção e discriminação de sinais corporais internos, incluindo acurácia e confiança na leitura desses sinais. Reatribuído de Biofisiológico para Afeto: a única fonte que menciona o conceito o posiciona como técnica de exposição interoceptiva dentro da dimensão Afeto, nível psicológico — não no sistema Biofisiológico, onde estava atribuído anteriormente. Reatribuição decidida por Marcus e Gabriel com base em revisão bibliográfica (ver /docs/verificacao-processos-eemm.md).",
       typicalValence: "context_dependent",
       source: {
-        reference: "Ciarrochi et al. (2024)",
+        reference: "Hofmann & Hayes (2024)",
         location: "Figura 3, comparação entre ACT e terapia psicodinâmica",
         verifiedBy: "Marcus e Gabriel",
         verifiedAt: "2026-08-12",
@@ -185,7 +185,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "maladaptive",
       source: {
         reference:
-          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024)",
         location:
           "BRT 2022, Tabela 1 (Rumination-Reflection Questionnaire, Penn State Worry Questionnaire); JPI 2024, subseção de Atenção do caso Mora",
         verifiedBy: "Marcus e Gabriel",
@@ -222,11 +222,11 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
     {
       name: "Hipervigilância",
       description:
-        "Ampliação sustentada do monitoramento atencional voltado à detecção de ameaça. Hayes et al. (2020) associa vigilância ao afeto/ansiedade; Ciarrochi et al. (2024) a associa à atenção. A atribuição a Atenção foi mantida por decisão de Marcus e Gabriel, priorizando a fonte mais recente e mais diretamente focada na descrição do próprio construto.",
+        "Ampliação sustentada do monitoramento atencional voltado à detecção de ameaça. Hayes et al. (2020) associa vigilância ao afeto/ansiedade; Hofmann & Hayes (2024) a associa à atenção. A atribuição a Atenção foi mantida por decisão de Marcus e Gabriel, priorizando a fonte mais recente e mais diretamente focada na descrição do próprio construto.",
       typicalValence: "maladaptive",
       source: {
         reference:
-          "Ciarrochi, Hernández, Hill, Ong, Gloster, Levin, Yap, Fraser, Sahdra, Hofmann & Hayes (2024)",
+          "Hofmann & Hayes (2024)",
         location:
           "Seção sobre descompasso evolutivo com o ambiente moderno ('heightened vigilance and aggression')",
         verifiedBy: "Marcus e Gabriel",
@@ -267,7 +267,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "maladaptive",
       source: {
         reference:
-          "Ciarrochi, Hernández, Hill, Ong, Gloster, Levin, Yap, Fraser, Sahdra, Hofmann & Hayes (2024)",
+          "Hofmann & Hayes (2024)",
         location:
           "Tabela 2 (linha de Compassion-Focused Therapy) e estudo de caso Mora ('I blame myself and cannot treat myself with compassion')",
         verifiedBy: "Marcus e Gabriel",
@@ -355,7 +355,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
   // NOTA: sistema Biofisiológico permanece com 3 processos (não 4), por
   // decisão deliberada. Busca bibliográfica dedicada nas três fontes-âncora
   // (Hayes et al., 2020; Hayes, Ciarrochi, Hofmann, Chin & Sahdra, 2022;
-  // Ciarrochi et al., 2024) não encontrou um quarto processo que atenda ao
+  // Hofmann & Hayes, 2024) não encontrou um quarto processo que atenda ao
   // critério de "processo de mudança caracterizável clinicamente" — o único
   // candidato adicional identificado (polimorfismo 5-HTT como endofenótipo
   // de flexibilidade psicológica, Hayes et al. 2022) é medida correlacional
@@ -371,7 +371,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "context_dependent",
       source: {
         reference:
-          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024)",
         location:
           "BRT 2022, Seção 3, discussão do nível biofisiológico; JPI 2024, lista de exemplos do nível biológico/fisiológico",
         verifiedBy: "Marcus e Gabriel",
@@ -384,7 +384,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
         "Magnitude e duração da resposta fisiológica de estresse a demandas ambientais, incluindo ativação sustentada além do término do estressor. Confiança baixa — suporte restrito a uma única fonte, sem terminologia técnica de reatividade nas fontes-âncora.",
       typicalValence: "maladaptive",
       source: {
-        reference: "Ciarrochi et al. (2024)",
+        reference: "Hofmann & Hayes (2024)",
         location: "Estudo de caso Mora, avaliação multinível",
         verifiedBy: "Marcus e Gabriel",
         verifiedAt: "2026-08-12",
@@ -396,7 +396,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
         "Estabilidade e adequação dos ciclos de sono-vigília às demandas do ambiente e às necessidades do organismo. 'Ritmo circadiano' não aparece nas fontes-âncora; o conceito sustentado é sono como alvo comportamental de intervenção.",
       typicalValence: "context_dependent",
       source: {
-        reference: "Ciarrochi et al. (2024)",
+        reference: "Hofmann & Hayes (2024)",
         location: "Estudo de caso Mora, etapa de planejamento de tratamento",
         verifiedBy: "Marcus e Gabriel",
         verifiedAt: "2026-08-12",
@@ -412,7 +412,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "adaptive",
       source: {
         reference:
-          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024)",
         location:
           "BRT 2022, Tabela 1, entrada da Medical Outcomes Study Social Support Survey; JPI 2024, Tabela 4 e caso Mora, etapa 4",
         verifiedBy: "Marcus e Gabriel",
@@ -426,7 +426,7 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "context_dependent",
       source: {
         reference:
-          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024)",
         location:
           "BRT 2022, Tabela 1, entrada do Drinking Norms Rating Form; JPI 2024, seção sobre o nível relações/cultura",
         verifiedBy: "Marcus e Gabriel",

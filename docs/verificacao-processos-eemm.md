@@ -28,8 +28,32 @@ concluída. Foi o que ocorreu com os itens 7, 8, 9, 13 e 17 no Sprint 9 — ver 
 
 **`Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)`** — sempre nesta ordem de autoria. A forma
 `Hayes, Hofmann & Ciarrochi (2022)` está **incorreta** (omite dois coautores e altera a ordem) e
-não deve ser usada. Ocorrências residuais de ordem de autoria incorreta em outros arquivos do
-repositório estão listadas em `SPRINT_9_LOG.md` §5, pendentes de correção autorizada.
+não deve ser usada. Esta nota **não foi afetada** pela correção de 2024 descrita abaixo: são
+obras distintas.
+
+### Forma canônica da referência de 2024 — corrigida no Sprint 11
+
+**`Hofmann & Hayes (2024)`** — **dois autores**, `Hofmann, S. G., & Hayes, S. C. (2024)`.
+
+A forma de **onze autores** usada nos Sprints 9 e 10 — `Ciarrochi, Hernández, Hill, Ong, Gloster,
+Levin, Yap, Fraser, Sahdra, Hofmann & Hayes (2024)` — e sua abreviação `Ciarrochi et al. (2024)`
+**estavam erradas**. Foi **erro de pesquisa bibliográfica**, introduzido na propagação dos
+Sprints 9–10: a autoria veio de uma fonte indexada incorretamente e **não foi conferida contra a
+entrada oficial da revista**.
+
+A forma correta foi **confirmada contra a lista de Referências do TCC pelos próprios autores do
+trabalho** e propagada a todas as ocorrências no Sprint 11.
+
+**O que a correção NÃO altera:** nenhuma `location`, nenhuma descrição de processo e nenhuma
+decisão de atribuição sistema→processo. O conteúdo bibliográfico citado — estudo de caso Mora,
+Figura 3, Tabela 2, seções — **permanece válido**; o que estava errado era exclusivamente a
+autoria da obra.
+
+> **Nota de rigor.** O `SPRINT_9_LOG.md` §5 sinalizou `Hofmann & Hayes (2024)` como "ordem de
+> autoria incorreta" e recomendou corrigi-la em `shared/eemm-processes.ts:6`. **Aquela
+> sinalização estava errada — a forma apontada como incorreta era a correta.** A recomendação
+> nunca foi executada porque a autorização foi retida, o que impediu que o erro se propagasse
+> também para o cabeçalho do arquivo. Ver `SPRINT_11_LOG.md` §3.
 
 ---
 
@@ -59,10 +83,10 @@ mudou de nome, de sistema ou deixou de existir.
 |---|---|---|---|---|---|---|---|
 | 1 | Supressão (regulação emocional) | Afeto | renomeado (era "Supressão emocional") | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022) | Tabela 1, entrada do Emotion Regulation Questionnaire (ERQ) | Marcus e Gabriel | 2026-08-12 |
 | 2 | Consciência emocional | Afeto | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022) | Tabela 1, entrada do Five Facet Mindfulness Questionnaire (fator Observe) | Marcus e Gabriel | 2026-08-12 |
-| 3 | Ruminação / preocupação perseverativa | Cognição | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024) | BRT 2022, Tabela 1 (Rumination-Reflection Questionnaire, Penn State Worry Questionnaire); JPI 2024, subseção de Atenção do caso Mora | Marcus e Gabriel | 2026-08-12 |
+| 3 | Ruminação / preocupação perseverativa | Cognição | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024) | BRT 2022, Tabela 1 (Rumination-Reflection Questionnaire, Penn State Worry Questionnaire); JPI 2024, subseção de Atenção do caso Mora | Marcus e Gabriel | 2026-08-12 |
 | 4 | Comportamento governado por regras | Cognição | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022) | Seção 1, discussão de pesquisa em Relational Frame Theory | Marcus e Gabriel | 2026-08-12 |
-| 5 | Hipervigilância | Atenção | mantido — divergência entre fontes resolvida por decisão (ver nota abaixo) | Ciarrochi, Hernández, Hill, Ong, Gloster, Levin, Yap, Fraser, Sahdra, Hofmann & Hayes (2024) | Seção sobre descompasso evolutivo com o ambiente moderno ("heightened vigilance and aggression") | Marcus e Gabriel | 2026-08-12 |
-| 6 | Autocrítica | Self | mantido | Ciarrochi, Hernández, Hill, Ong, Gloster, Levin, Yap, Fraser, Sahdra, Hofmann & Hayes (2024) | Tabela 2 (linha de Compassion-Focused Therapy) e estudo de caso Mora ("I blame myself and cannot treat myself with compassion") | Marcus e Gabriel | 2026-08-12 |
+| 5 | Hipervigilância | Atenção | mantido — divergência entre fontes resolvida por decisão (ver nota abaixo) | Hofmann & Hayes (2024) | Seção sobre descompasso evolutivo com o ambiente moderno ("heightened vigilance and aggression") | Marcus e Gabriel | 2026-08-12 |
+| 6 | Autocrítica | Self | mantido | Hofmann & Hayes (2024) | Tabela 2 (linha de Compassion-Focused Therapy) e estudo de caso Mora ("I blame myself and cannot treat myself with compassion") | Marcus e Gabriel | 2026-08-12 |
 | 7 | — *(removido)* | Motivação | **REMOVIDO** (C1); slot ocupado por "Ação valorizada (valores como base motivacional)" (C2) | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022) | Seção 2.3 ("Pillar 3: engagement"); Tabela 1, entradas do Valued Living Questionnaire e do Engaged Living Scale | Marcus e Gabriel | 2026-08-12 |
 | 8 | — *(fundido no item 9)* | Motivação → Comportamento Manifesto | **FUNDIDO** (C5) com o item 9 | Hayes et al. (2020); Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022) | Hayes et al. 2020, Seção 2.3; Hayes et al. 2022, Seção 2.1, discussão do Pilar 1 | Marcus e Gabriel | 2026-08-12 |
 | 9 | Repertório comportamental (amplitude e flexibilidade) | Comportamento Manifesto | **FUNDIDO** (C5): absorve o item 8; era "Repertório de habilidades" | Hayes et al. (2020); Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022) | Hayes et al. 2020, Seção 2.3; Hayes et al. 2022, Seção 2.1, discussão do Pilar 1 | Marcus e Gabriel | 2026-08-12 |
@@ -71,12 +95,12 @@ mudou de nome, de sistema ou deixou de existir.
 
 | # | Processo (estado atual) | Sistema | Desfecho | Referência (autor, ano) | Localização (p./seção/figura) | Verificado por | Data |
 |---|---|---|---|---|---|---|---|
-| 10 | Atividade do sistema nervoso autônomo (variabilidade da frequência cardíaca) | Biofisiológico | renomeado (era "Regulação autonômica") | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024) | BRT 2022, Seção 3, discussão do nível biofisiológico; JPI 2024, lista de exemplos do nível biológico/fisiológico | Marcus e Gabriel | 2026-08-12 |
-| 11 | Estresse fisiológico | Biofisiológico | renomeado (era "Reatividade de estresse fisiológico"); **confiança baixa** | Ciarrochi et al. (2024) | Estudo de caso Mora, avaliação multinível | Marcus e Gabriel | 2026-08-12 |
-| 12 | Sono (higiene do sono) | Biofisiológico | renomeado (era "Regulação do ritmo circadiano e do sono") | Ciarrochi et al. (2024) | Estudo de caso Mora, etapa de planejamento de tratamento | Marcus e Gabriel | 2026-08-12 |
-| 13 | Interocepção | **Afeto** (era Biofisiológico) | **REATRIBUÍDO** (C3) | Ciarrochi et al. (2024) | Figura 3, comparação entre ACT e terapia psicodinâmica | Marcus e Gabriel | 2026-08-12 |
-| 14 | Suporte social | Sociocultural | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024) | BRT 2022, Tabela 1, entrada da Medical Outcomes Study Social Support Survey; JPI 2024, Tabela 4 e caso Mora, etapa 4 | Marcus e Gabriel | 2026-08-12 |
-| 15 | Normas de grupo | Sociocultural | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024) | BRT 2022, Tabela 1, entrada do Drinking Norms Rating Form; JPI 2024, seção sobre o nível relações/cultura | Marcus e Gabriel | 2026-08-12 |
+| 10 | Atividade do sistema nervoso autônomo (variabilidade da frequência cardíaca) | Biofisiológico | renomeado (era "Regulação autonômica") | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024) | BRT 2022, Seção 3, discussão do nível biofisiológico; JPI 2024, lista de exemplos do nível biológico/fisiológico | Marcus e Gabriel | 2026-08-12 |
+| 11 | Estresse fisiológico | Biofisiológico | renomeado (era "Reatividade de estresse fisiológico"); **confiança baixa** | Hofmann & Hayes (2024) | Estudo de caso Mora, avaliação multinível | Marcus e Gabriel | 2026-08-12 |
+| 12 | Sono (higiene do sono) | Biofisiológico | renomeado (era "Regulação do ritmo circadiano e do sono") | Hofmann & Hayes (2024) | Estudo de caso Mora, etapa de planejamento de tratamento | Marcus e Gabriel | 2026-08-12 |
+| 13 | Interocepção | **Afeto** (era Biofisiológico) | **REATRIBUÍDO** (C3) | Hofmann & Hayes (2024) | Figura 3, comparação entre ACT e terapia psicodinâmica | Marcus e Gabriel | 2026-08-12 |
+| 14 | Suporte social | Sociocultural | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024) | BRT 2022, Tabela 1, entrada da Medical Outcomes Study Social Support Survey; JPI 2024, Tabela 4 e caso Mora, etapa 4 | Marcus e Gabriel | 2026-08-12 |
+| 15 | Normas de grupo | Sociocultural | mantido | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Hofmann & Hayes (2024) | BRT 2022, Tabela 1, entrada do Drinking Norms Rating Form; JPI 2024, seção sobre o nível relações/cultura | Marcus e Gabriel | 2026-08-12 |
 | 16 | Autoestigma | Sociocultural | renomeado (era "Estigma e estigma internalizado") | Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022) | Seção 1.1, lista de aplicações iniciais da ACT | Marcus e Gabriel | 2026-08-12 |
 | 17 | — *(removido)* | Sociocultural | **REMOVIDO** (C4) — a única fonte que aborda o conceito o trata exclusivamente como descritor de contexto clínico, nunca como processo de mudança nomeado | — | — | Marcus e Gabriel | 2026-08-12 |
 
@@ -119,7 +143,7 @@ na ajuda contextual e não só a quem lê este arquivo.
 as fontes-âncora**, não por descuido:
 
 - **Hayes et al. (2020)** associa vigilância a **Afeto/ansiedade**.
-- **Ciarrochi et al. (2024)** a associa a **Atenção**.
+- **Hofmann & Hayes (2024)** a associa a **Atenção**.
 
 **Decisão de Marcus e Gabriel (Sprint 10): manter a atribuição a Atenção**, priorizando a fonte
 mais recente e mais diretamente focada na descrição do próprio construto. A divergência está
@@ -135,7 +159,7 @@ Sociocultural voltou a ter 4 processos com o item 18. **Biofisiológico permanec
 decisão deliberada**, e o registro dessa decisão importa tanto quanto os que a acompanham.
 
 Busca dedicada nas três fontes-âncora — Hayes et al. (2020); Hayes, Ciarrochi, Hofmann, Chin &
-Sahdra (2022); Ciarrochi et al. (2024) — **não encontrou um quarto processo que atenda ao critério
+Sahdra (2022); Hofmann & Hayes (2024) — **não encontrou um quarto processo que atenda ao critério
 de "processo de mudança caracterizável clinicamente"**.
 
 **Único candidato adicional identificado:** o **polimorfismo 5-HTT**, discutido em Hayes,
