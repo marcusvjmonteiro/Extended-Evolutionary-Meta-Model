@@ -126,22 +126,42 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "adaptive",
     },
     {
-      name: "Supressão emocional",
+      name: "Supressão (regulação emocional)",
       description:
         "Inibição deliberada da expressão de uma emoção já em curso.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — parte da literatura trata supressão como subtipo de
-      // evitação experiencial, e não como processo distinto no EEMM.
       typicalValence: "maladaptive",
+      source: {
+        reference: "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)",
+        location: "Tabela 1, entrada do Emotion Regulation Questionnaire (ERQ)",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
       name: "Consciência emocional",
       description:
-        "Capacidade de identificar, discriminar e nomear os próprios estados emocionais.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — fronteira com o sistema de atenção (atenção dirigida
-      // ao estado interno) não é nítida.
+        "Capacidade de identificar, discriminar e nomear os próprios estados emocionais. A fonte codifica este mediador simultaneamente em Afeto e Atenção; não há resolução única para um só sistema nas fontes-âncora.",
       typicalValence: "adaptive",
+      source: {
+        reference: "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)",
+        location:
+          "Tabela 1, entrada do Five Facet Mindfulness Questionnaire (fator Observe)",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
+    },
+    {
+      // Reatribuído de `biophysiological` para `affect` no Sprint 9 (decisão C3).
+      name: "Interocepção",
+      description:
+        "Detecção e discriminação de sinais corporais internos, incluindo acurácia e confiança na leitura desses sinais. Reatribuído de Biofisiológico para Afeto: a única fonte que menciona o conceito o posiciona como técnica de exposição interoceptiva dentro da dimensão Afeto, nível psicológico — não no sistema Biofisiológico, onde estava atribuído anteriormente. Reatribuição decidida por Marcus e Gabriel com base em revisão bibliográfica (ver /docs/verificacao-processos-eemm.md).",
+      typicalValence: "context_dependent",
+      source: {
+        reference: "Ciarrochi et al. (2024)",
+        location: "Figura 3, comparação entre ACT e terapia psicodinâmica",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
   ],
 
@@ -161,20 +181,28 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
     {
       name: "Ruminação / preocupação perseverativa",
       description:
-        "Envolvimento repetitivo e prolongado com conteúdo verbal sobre eventos passados ou futuros.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — pode ser lida como processo do sistema de atenção
-      // (perseveração atencional) em vez de cognição.
+        "Envolvimento repetitivo e prolongado com conteúdo verbal sobre eventos passados ou futuros. Sobreposição documentada com o sistema Atenção.",
       typicalValence: "maladaptive",
+      source: {
+        reference:
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+        location:
+          "BRT 2022, Tabela 1 (Rumination-Reflection Questionnaire, Penn State Worry Questionnaire); JPI 2024, subseção de Atenção do caso Mora",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
       name: "Comportamento governado por regras",
       description:
         "Comportamento sob controle de formulações verbais sobre contingências, e não do contato direto com elas.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — pliance tem componente social forte e poderia ser
-      // atribuído ao sistema de motivação ou ao sistema sociocultural.
       typicalValence: "context_dependent",
+      source: {
+        reference: "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)",
+        location: "Seção 1, discussão de pesquisa em Relational Frame Theory",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
   ],
 
@@ -194,11 +222,16 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
     {
       name: "Hipervigilância",
       description:
-        "Ampliação sustentada do monitoramento atencional voltado à detecção de ameaça.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — fronteira com o sistema de afeto (componente de
-      // ativação relacionada à ameaça) não é nítida.
+        "Ampliação sustentada do monitoramento atencional voltado à detecção de ameaça. Hayes et al. (2020) associa vigilância ao afeto/ansiedade; Ciarrochi et al. (2024) a associa à atenção. A atribuição a Atenção foi mantida por decisão de Marcus e Gabriel, priorizando a fonte mais recente e mais diretamente focada na descrição do próprio construto.",
       typicalValence: "maladaptive",
+      source: {
+        reference:
+          "Ciarrochi, Hernández, Hill, Ong, Gloster, Levin, Yap, Fraser, Sahdra, Hofmann & Hayes (2024)",
+        location:
+          "Seção sobre descompasso evolutivo com o ambiente moderno ('heightened vigilance and aggression')",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
       name: "Desengajamento atencional",
@@ -231,10 +264,15 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       name: "Autocrítica",
       description:
         "Avaliação verbal negativa recorrente dirigida a si mesmo.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — poderia ser tratada como processo do sistema de
-      // cognição (conteúdo avaliativo) em vez de self.
       typicalValence: "maladaptive",
+      source: {
+        reference:
+          "Ciarrochi, Hernández, Hill, Ong, Gloster, Levin, Yap, Fraser, Sahdra, Hofmann & Hayes (2024)",
+        location:
+          "Tabela 2 (linha de Compassion-Focused Therapy) e estudo de caso Mora ('I blame myself and cannot treat myself with compassion')",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
   ],
 
@@ -252,22 +290,19 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "maladaptive",
     },
     {
-      name: "Hierarquização de objetivos",
+      // Sprint 9, decisão C2: ocupa o slot do antigo "Hierarquização de objetivos",
+      // removido por C1.
+      name: "Ação valorizada (valores como base motivacional)",
       description:
-        "Organização de metas e valores em relações de subordinação, permitindo priorizar entre alternativas concorrentes.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — envolve enquadramento relacional hierárquico e
-      // poderia ser atribuída ao sistema de cognição.
-      typicalValence: "context_dependent",
-    },
-    {
-      name: "Rigidez motivacional",
-      description:
-        "Persistência em uma direção motivacional apesar de mudança nas contingências que a sustentavam.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — sobreposição conceitual com rigidez comportamental
-      // (sistema de comportamento manifesto).
-      typicalValence: "maladaptive",
+        "Valores funcionam como base motivacional que estabelece reforçadores intrínsecos e orienta ação comprometida — descrito na fonte como o terceiro pilar da flexibilidade psicológica (engajamento).",
+      typicalValence: "adaptive",
+      source: {
+        reference: "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)",
+        location:
+          "Seção 2.3 ('Pillar 3: engagement'); Tabela 1, entradas do Valued Living Questionnaire e do Engaged Living Scale",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
   ],
 
@@ -291,65 +326,81 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
       typicalValence: "maladaptive",
     },
     {
-      name: "Repertório de habilidades",
+      // Sprint 9, decisão C5: fusão de "Rigidez motivacional" (antes em Motivação) com
+      // "Repertório de habilidades" (antes aqui). O item de Motivação foi removido.
+      name: "Repertório comportamental (amplitude e flexibilidade)",
       description:
-        "Amplitude e variabilidade de respostas disponíveis diante de uma demanda situacional.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — a literatura trata repertório ora como processo, ora
-      // como resultado de outros processos.
+        "Amplitude e variabilidade de respostas disponíveis diante de uma demanda situacional. Processo fundido a partir de dois itens do mapa original (rigidez motivacional e repertório de habilidades), que a revisão bibliográfica encontrou ancorados no mesmo trecho-fonte sobre estreitamento de repertório ('repertoire narrowing'). Fusão decidida por Marcus e Gabriel.",
       typicalValence: "context_dependent",
+      source: {
+        reference:
+          "Hayes et al. (2020); Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)",
+        location:
+          "Hayes et al. 2020, Seção 2.3; Hayes et al. 2022, Seção 2.1, discussão do Pilar 1",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
   ],
 
   // ==========================================================================
-  // SISTEMAS NOVOS (Sprint 5) — conteúdo escrito neste sprint, sem base de
-  // atribuição prévia no repositório. TODOS os itens estão marcados VERIFICAR.
+  // SISTEMAS INTRODUZIDOS NO SPRINT 5, com atribuições conferidas no Sprint 9.
+  //
+  // A contagem caiu de 4 para 3 processos em cada um: `Interocepção` migrou para
+  // `affect` (decisão C3) e `Papéis socioculturais` foi removido sem substituto
+  // (decisão C4). Contagem menor NÃO significa lacuna preenchida — ver
+  // SPRINT_9_LOG.md.
   // ==========================================================================
 
+  // NOTA: sistema Biofisiológico permanece com 3 processos (não 4), por
+  // decisão deliberada. Busca bibliográfica dedicada nas três fontes-âncora
+  // (Hayes et al., 2020; Hayes, Ciarrochi, Hofmann, Chin & Sahdra, 2022;
+  // Ciarrochi et al., 2024) não encontrou um quarto processo que atenda ao
+  // critério de "processo de mudança caracterizável clinicamente" — o único
+  // candidato adicional identificado (polimorfismo 5-HTT como endofenótipo
+  // de flexibilidade psicológica, Hayes et al. 2022) é medida correlacional
+  // de pesquisa genética, não processo modificável em contexto clínico, e
+  // foi descartado por esse motivo. Ver /docs/verificacao-processos-eemm.md
+  // e SPRINT_10_LOG.md para o registro completo da busca.
   biophysiological: [
     {
-      name: "Regulação autonômica",
+      name:
+        "Atividade do sistema nervoso autônomo (variabilidade da frequência cardíaca)",
       description:
         "Ajuste do balanço simpático-parassimpático à demanda da situação, incluindo a capacidade de retornar à linha de base após ativação.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Falta confirmar se Hayes et al. tratam regulação autonômica como processo de
-      // mudança do sistema biofisiológico ou como medida (índice fisiológico) de
-      // flexibilidade atribuída a outro sistema.
       typicalValence: "context_dependent",
+      source: {
+        reference:
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+        location:
+          "BRT 2022, Seção 3, discussão do nível biofisiológico; JPI 2024, lista de exemplos do nível biológico/fisiológico",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
-      name: "Reatividade de estresse fisiológico",
+      name: "Estresse fisiológico",
       description:
-        "Magnitude e duração da resposta fisiológica de estresse a demandas ambientais, incluindo ativação sustentada além do término do estressor.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Falta confirmar a terminologia da fonte (resposta de estresse, carga
-      // alostática, reatividade do eixo HPA são tratadas de modos distintos na
-      // literatura) e se a polaridade desadaptativa é sustentada ou dependente do
-      // contexto.
+        "Magnitude e duração da resposta fisiológica de estresse a demandas ambientais, incluindo ativação sustentada além do término do estressor. Confiança baixa — suporte restrito a uma única fonte, sem terminologia técnica de reatividade nas fontes-âncora.",
       typicalValence: "maladaptive",
+      source: {
+        reference: "Ciarrochi et al. (2024)",
+        location: "Estudo de caso Mora, avaliação multinível",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
-      name: "Regulação do ritmo circadiano e do sono",
+      name: "Sono (higiene do sono)",
       description:
-        "Estabilidade e adequação dos ciclos de sono-vigília às demandas do ambiente e às necessidades do organismo.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Falta confirmar se a fonte trata sono como processo biofisiológico próprio ou
-      // como comportamento manifesto (higiene de sono) — a fronteira é disputada.
+        "Estabilidade e adequação dos ciclos de sono-vigília às demandas do ambiente e às necessidades do organismo. 'Ritmo circadiano' não aparece nas fontes-âncora; o conceito sustentado é sono como alvo comportamental de intervenção.",
       typicalValence: "context_dependent",
-    },
-    {
-      name: "Interocepção",
-      description:
-        "Detecção e discriminação de sinais corporais internos, incluindo acurácia e confiança na leitura desses sinais.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Fronteira explícita com os sistemas de atenção (direcionamento atencional ao
-      // corpo) e de afeto (consciência emocional); pode não ser processo
-      // biofisiológico na leitura da fonte.
-      typicalValence: "context_dependent",
+      source: {
+        reference: "Ciarrochi et al. (2024)",
+        location: "Estudo de caso Mora, etapa de planejamento de tratamento",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
   ],
 
@@ -357,45 +408,57 @@ export const CHANGE_PROCESSES: Record<System, ChangeProcess[]> = {
     {
       name: "Suporte social",
       description:
-        "Disponibilidade e acesso efetivo a vínculos que oferecem apoio instrumental, informacional ou emocional.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Falta confirmar se a fonte distingue suporte disponível de suporte percebido
-      // (que teria componente cognitivo) e qual dos dois é o processo do sistema.
+        "Disponibilidade e acesso efetivo a vínculos que oferecem apoio instrumental, informacional ou emocional. Nenhuma das fontes distingue suporte social disponível de suporte social percebido; o instrumento citado mede exclusivamente percepção por autorrelato.",
       typicalValence: "adaptive",
+      source: {
+        reference:
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+        location:
+          "BRT 2022, Tabela 1, entrada da Medical Outcomes Study Social Support Survey; JPI 2024, Tabela 4 e caso Mora, etapa 4",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
       name: "Normas de grupo",
       description:
-        "Regras compartilhadas, explícitas ou implícitas, que o grupo de referência sustenta sobre o que é comportamento esperado.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Sobreposição direta com "comportamento governado por regras" (cognição): falta
-      // confirmar se a fonte separa a norma como contingência sociocultural do
-      // controle verbal que ela exerce sobre o indivíduo.
+        "Regras compartilhadas, explícitas ou implícitas, que o grupo de referência sustenta sobre o que é comportamento esperado. Sobreposição conceitual documentada com o processo de comportamento governado por regras (Cognição) — as fontes não separam a norma social do controle verbal que ela exerce.",
       typicalValence: "context_dependent",
+      source: {
+        reference:
+          "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022); Ciarrochi et al. (2024)",
+        location:
+          "BRT 2022, Tabela 1, entrada do Drinking Norms Rating Form; JPI 2024, seção sobre o nível relações/cultura",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
-      name: "Estigma e estigma internalizado",
+      name: "Autoestigma",
       description:
-        "Desvalorização social dirigida a um grupo ou condição, e sua incorporação pelo próprio indivíduo como autoavaliação.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Estigma público é sociocultural, mas o estigma internalizado tem sobreposição
-      // com o sistema de self (self conceitualizado); falta confirmar se a fonte os
-      // trata como um processo ou dois.
+        "Desvalorização social dirigida a um grupo ou condição, e sua incorporação pelo próprio indivíduo como autoavaliação. Fonte trata exclusivamente como 'self-stigma'; não há suporte para estigma público como processo distinto. Sobreposição possível com Self (componente de autoconceito).",
       typicalValence: "maladaptive",
+      source: {
+        reference: "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)",
+        location: "Seção 1.1, lista de aplicações iniciais da ACT",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
     {
-      name: "Papéis socioculturais",
+      // Acrescentado no Sprint 10. Repõe o quarto processo do sistema, perdido no
+      // Sprint 9 com a remoção de "Papéis socioculturais" (decisão C4).
+      name: "Vínculo e pertencimento",
       description:
-        "Posições sociais ocupadas pela pessoa e o conjunto de prescrições de comportamento associadas a cada uma.",
-      // VERIFICAR: atribuição a confirmar contra a literatura fonte antes de uso na
-      // coleta de dados real — item novo, sem atribuição prévia neste repositório.
-      // Falta confirmar se papel sociocultural figura como processo de mudança na
-      // fonte ou apenas como descritor de contexto — a distinção importa, porque só o
-      // primeiro caberia nesta lista.
-      typicalValence: "context_dependent",
+        "Extensão sociocultural do processo de self contextual (nível psicológico): a fonte propõe explicitamente que o senso de self contextual se estende, no nível social, para vínculo e pertencimento seguro. Processo distinto dos demais três processos socioculturais do mapa (suporte social, normas de grupo, autoestigma), com foco em qualidade relacional/apego.",
+      typicalValence: "adaptive",
+      source: {
+        reference: "Hayes, Ciarrochi, Hofmann, Chin & Sahdra (2022)",
+        location:
+          "Discussão da extensão social do modelo de flexibilidade psicológica ('a noticing or contextual self to secure attachment and belonging')",
+        verifiedBy: "Marcus e Gabriel",
+        verifiedAt: "2026-08-12",
+      },
     },
   ],
 };
