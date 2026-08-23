@@ -59,3 +59,10 @@ Thumbs.db
 *.sqlite-wal
 *.sqlite3
 *.db
+
+# Logs de desenvolvimento (sprints e auditorias) — registro de processo interno,
+# não conteúdo do artefato nem do TCC. Ficam fora do tracking a partir de agora;
+# os já commitados permanecem no histórico como registro do processo até aqui
+# (não reescrito, mesma decisão já tomada para o banco de dados acima).
+SPRINT_*_LOG.md
+AUDITORIA_METODOLOGIA*.md
