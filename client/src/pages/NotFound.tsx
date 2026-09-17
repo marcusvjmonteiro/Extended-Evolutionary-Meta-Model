@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import EvaluationCallout from "../components/EvaluationCallout";
 
 /**
  * Rota-fallback. Antes deste sprint, qualquer URL nao declarada renderizava tela em
@@ -19,6 +20,10 @@ export default function NotFound() {
       >
         ← Voltar à lista de pacientes
       </button>
+
+      <div className="w-full max-w-md">
+        <EvaluationCallout />
+      </div>
     </div>
   );
 }

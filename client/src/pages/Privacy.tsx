@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EvaluationCallout from "../components/EvaluationCallout";
 
 /**
  * Página de transparência de armazenamento e retenção (Tarefa T8, Apêndice C).
@@ -239,6 +240,8 @@ export default function Privacy() {
                 são um texto fixo: se a configuração mudar, esta página muda junto.
               </p>
             )}
+
+            <EvaluationCallout />
           </>
         )}
       </div>

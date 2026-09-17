@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import type { System } from "@shared/eemm-types";
+import EvaluationCallout from "../components/EvaluationCallout";
 
 interface FormulationBlock {
   system: System;
@@ -166,6 +167,8 @@ export default function Formulation() {
             )}
           </section>
         ))}
+
+        <EvaluationCallout />
       </div>
     </div>
   );
