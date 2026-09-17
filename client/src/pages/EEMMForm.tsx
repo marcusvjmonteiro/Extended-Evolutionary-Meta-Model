@@ -12,6 +12,7 @@ import {
 } from "@shared/eemm-types";
 import type { System, Operator, Valence } from "@shared/eemm-types";
 import type { ChangeProcess, ProcessValence } from "@shared/eemm-processes";
+import EvaluationCallout from "../components/EvaluationCallout";
 
 interface Patient {
   id: number;
@@ -567,6 +568,10 @@ export default function EEMMForm() {
             Os oito sistemas formam um eixo único: "Dimensões" e "Níveis Adicionais"
             são apenas agrupamentos de leitura, não um cruzamento entre si.
           </p>
+        </div>
+
+        <div className="mt-6">
+          <EvaluationCallout />
         </div>
       </div>
 

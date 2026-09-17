@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EvaluationCallout from "../components/EvaluationCallout";
 
 interface Patient {
   id: number;
@@ -204,6 +205,10 @@ export default function PatientList() {
               </tbody>
             </table>
           )}
+        </div>
+
+        <div className="mt-6">
+          <EvaluationCallout />
         </div>
       </div>
 
