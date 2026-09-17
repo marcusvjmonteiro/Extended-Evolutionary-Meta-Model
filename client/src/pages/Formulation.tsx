@@ -166,6 +166,39 @@ export default function Formulation() {
             )}
           </section>
         ))}
+
+        {/*
+          Convite à avaliação. Fica após o último bloco, no fim do fluxo de uso:
+          e o momento em que o avaliador acabou de ver o resultado do roteiro de
+          tarefas e tem a experiência completa fresca para relatar.
+        */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4">
+          <p className="text-sm font-semibold text-blue-900 mb-1">
+            Este artefato é parte de uma pesquisa acadêmica
+          </p>
+          <p className="text-sm text-blue-900 leading-relaxed mb-3">
+            Se você concluiu o roteiro de tarefas, sua avaliação é o dado que esta
+            pesquisa precisa coletar. Escolha o formulário correspondente ao seu papel:
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <a
+              href="https://forms.gle/DJVnxTSwJL1np2oYA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 transition-colors"
+            >
+              Avaliação clínica (profissionais de psicologia)
+            </a>
+            <a
+              href="https://forms.gle/CKNVv5hm2oTBMqUj7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center text-sm font-medium text-blue-700 bg-white border border-blue-300 hover:bg-blue-50 rounded-lg px-4 py-2 transition-colors"
+            >
+              Avaliação técnica (avaliadores técnicos)
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );

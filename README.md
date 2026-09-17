@@ -36,16 +36,6 @@ tem **32 células e até 64 registros** por caso.
 
 *(A = adaptativo, D = desadaptativo — os dois coexistem por célula, nunca se sobrescrevem.)*
 
-### Avaliação da plataforma
-
-Formulários abertos para avaliação por especialistas deste artefato:
-
-- [Formulário de avaliação clínica](https://forms.gle/DJVnxTSwJL1np2oYA) — dirigido a
-  profissionais de psicologia, sobre a validade e utilidade clínica da matriz e da formulação
-  gerada.
-- [Formulário de avaliação técnica](https://forms.gle/CKNVv5hm2oTBMqUj7) — dirigido a
-  avaliadores técnicos, sobre usabilidade, arquitetura e conformidade estrutural do artefato.
-
 ---
 
 ## O artefato
